@@ -1,0 +1,311 @@
+// src/pages/customer/PatientForm.jsx
+import { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
+
+const EMPTY = {
+  name: '',
+  relation: 'Bố',
+  dob: '',
+  gender: 'Nam',
+  bhyt: '',
+  address: '',
+  emergencyPhone: '',
+  avatar: '',
+  allergies: [],
+  conditions: [],
+};
+
+const RELATIONS = ['Bố', 'Mẹ', 'Ông', 'Bà', 'Vợ', 'Chồng', 'Khác'];
+const COMMON_ALLERGIES = ['Penicillin', 'Paracetamol', 'Aspirin', 'Hải sản', 'Khác'];
+const COMMON_CONDITIONS = ['Tiểu đường', 'Tăng huyết áp', 'Tim mạch', 'Hen suyễn', 'Khác'];
+
+export default function PatientForm({ initial, onSubmit, onCancel }) {
+  const [form, setForm] = useState(EMPTY);
+  const [preview, setPreview] = useState('');
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    if (initial) {
+      setForm({ ...EMPTY, ...initial });
+      setPreview(initial.avatar || '');
+    } else {
+      setForm(EMPTY);
+      setPreview('');
+    }
+  }, [initial]);
+
+  const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+
+  const toggleItem = (key, item) => {
+    setForm((f) => {
+      const list = f[key];
+      return {
+        ...f,
+        [key]: list.includes(item)
+          ? list.filter((x) => x !== item)
+          : [...list, item],
+      };
+    });
+  };
+
+  // Upload ảnh → chuyển thành base64 để lưu localStorage
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Vui lòng chọn file ảnh');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ảnh tối đa 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target.result;
+      setPreview(base64);
+      update('avatar', base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveAvatar = () => {
+    setPreview('');
+    update('avatar', '');
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) return toast.error('Vui lòng nhập họ tên');
+    if (!form.dob) return toast.error('Vui lòng nhập năm sinh');
+    if (!form.address.trim()) return toast.error('Vui lòng nhập địa chỉ');
+    onSubmit(form);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* ===== UPLOAD AVATAR ===== */}
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          {preview ? (
+            <img
+              src={preview}
+              alt="avatar"
+              className="w-20 h-20 rounded-full object-cover border-2 border-teal-200"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-2xl font-bold border-2 border-dashed border-teal-300">
+              {form.name?.charAt(0) || '👤'}
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-gray-700 mb-2">Ảnh đại diện</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="text-xs px-3 py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition font-medium"
+            >
+              📷 Chọn ảnh
+            </button>
+            {preview && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                className="text-xs px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition font-medium"
+              >
+                🗑 Xóa
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1">
+            JPG/PNG, tối đa 2MB
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            className="hidden"
+          />
+        </div>
+      </div>
+
+      {/* Hàng 1: Tên + Quan hệ */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Họ và tên *
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => update('name', e.target.value)}
+            placeholder="Nguyễn Văn A"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Quan hệ
+          </label>
+          <select
+            value={form.relation}
+            onChange={(e) => update('relation', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+          >
+            {RELATIONS.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Hàng 2 */}
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Năm sinh *
+          </label>
+          <input
+            type="text"
+            value={form.dob}
+            onChange={(e) =>
+              update('dob', e.target.value.replace(/\D/g, '').slice(0, 4))
+            }
+            placeholder="1955"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Giới tính
+          </label>
+          <select
+            value={form.gender}
+            onChange={(e) => update('gender', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+          >
+            <option>Nam</option>
+            <option>Nữ</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Mã BHYT
+          </label>
+          <input
+            type="text"
+            value={form.bhyt}
+            onChange={(e) => update('bhyt', e.target.value.toUpperCase())}
+            placeholder="DN123456789"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Địa chỉ */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          Địa chỉ thường trú tại TP.HCM *
+        </label>
+        <input
+          type="text"
+          value={form.address}
+          onChange={(e) => update('address', e.target.value)}
+          placeholder="123 Lê Lợi, Q.1, TP.HCM"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+        />
+      </div>
+
+      {/* SĐT khẩn cấp */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          SĐT liên hệ khẩn cấp
+        </label>
+        <input
+          type="tel"
+          value={form.emergencyPhone}
+          onChange={(e) =>
+            update('emergencyPhone', e.target.value.replace(/\D/g, '').slice(0, 10))
+          }
+          placeholder="0901234567"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+        />
+      </div>
+
+      {/* Dị ứng */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          🚨 Dị ứng thuốc
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {COMMON_ALLERGIES.map((a) => {
+            const active = form.allergies.includes(a);
+            return (
+              <button
+                key={a}
+                type="button"
+                onClick={() => toggleItem('allergies', a)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                  active
+                    ? 'bg-red-500 text-white border-red-500'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'
+                }`}
+              >
+                {a}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bệnh lý nền */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Bệnh lý nền
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {COMMON_CONDITIONS.map((c) => {
+            const active = form.conditions.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleItem('conditions', c)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                  active
+                    ? 'bg-amber-500 text-white border-amber-500'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-amber-400'
+                }`}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition"
+        >
+          {initial ? 'Cập nhật' : 'Thêm người thân'}
+        </button>
+      </div>
+    </form>
+  );
+}
