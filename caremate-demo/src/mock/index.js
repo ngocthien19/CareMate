@@ -11,6 +11,7 @@ export const MOCK_USERS = {
     // Ảnh chân dung thật từ Unsplash
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
   },
+  // src/mock/index.js — MOCK_USERS
   nurse: {
     phone: '0902345678',
     password: '123456',
@@ -18,6 +19,31 @@ export const MOCK_USERS = {
     role: 'nurse',
     nurseId: 1,
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=faces',
+  },
+  // Thêm 3 nurse khác
+  nurse2: {
+    phone: '0902345679',
+    password: '123456',
+    name: 'Trần Văn Minh',
+    role: 'nurse',
+    nurseId: 2,
+    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&crop=faces',
+  },
+  nurse3: {
+    phone: '0902345680',
+    password: '123456',
+    name: 'Lê Thị Hoa',
+    role: 'nurse',
+    nurseId: 3,
+    avatar: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
+  },
+  nurse4: {
+    phone: '0902345681',
+    password: '123456',
+    name: 'Phạm Quốc Bảo',
+    role: 'nurse',
+    nurseId: 4,
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&h=200&fit=crop&crop=faces',
   },
   admin: {
     phone: '0903456789',
@@ -48,27 +74,61 @@ export const SPECIALTIES = [
 // ===== Y TÁ =====
 export const NURSES = [
   {
-    id: 1, name: 'Nguyễn Thị Lan', age: 28, exp: 5, rating: 4.9,
-    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=faces',
+    id: 1,
+    name: 'Nguyễn Thị Lan',
+    age: 28,
+    exp: 5,
+    rating: 4.9,
+    avatar:
+      'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=faces',
     certs: ['Bằng CĐ Y Dược', 'CCHN Sở Y tế', 'BLS'],
-    reviews: [{ stars: 5, comment: 'Rất chu đáo', tags: ['Đúng giờ', 'Ân cần'] }],
+    licenseNumber: 'CCHN-2024-12345',
+    cprCert: 'CPR-2024-001',
+    blsCert: 'BLS-2024-001',
+    reviews: [
+      { stars: 5, comment: 'Rất chu đáo', tags: ['Đúng giờ', 'Ân cần'] },
+    ],
   },
   {
-    id: 2, name: 'Trần Văn Minh', age: 32, exp: 7, rating: 4.7,
-    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&crop=faces',
+    id: 2,
+    name: 'Trần Văn Minh',
+    age: 32,
+    exp: 7,
+    rating: 4.7,
+    avatar:
+      'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&crop=faces',
     certs: ['Bằng ĐH Y Dược', 'CCHN Sở Y tế'],
+    licenseNumber: 'CCHN-2020-67890',
+    cprCert: 'CPR-2022-045',
+    blsCert: 'BLS-2022-045',
     reviews: [{ stars: 4, comment: 'Tốt', tags: ['Chuyên nghiệp'] }],
   },
   {
-    id: 3, name: 'Lê Thị Hoa', age: 26, exp: 3, rating: 4.8,
-    avatar: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
-    certs: ['Bằng CĐ Y Dược', 'BLS'],
+    id: 3,
+    name: 'Lê Thị Hoa',
+    age: 26,
+    exp: 3,
+    rating: 4.8,
+    avatar:
+      'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
+    certs: ['Bằng CĐ Y Dược', 'CCHN Sở Y tế', 'BLS'],
+    licenseNumber: 'CCHN-2023-54321',
+    cprCert: 'CPR-2023-088',
+    blsCert: 'BLS-2023-088',
     reviews: [],
   },
   {
-    id: 4, name: 'Phạm Quốc Bảo', age: 30, exp: 6, rating: 4.6,
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&h=200&fit=crop&crop=faces',
-    certs: ['Bằng ĐH Y Dược', 'CCHN Sở Y tế'],
+    id: 4,
+    name: 'Phạm Quốc Bảo',
+    age: 30,
+    exp: 6,
+    rating: 4.6,
+    avatar:
+      'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&h=200&fit=crop&crop=faces',
+    certs: ['Bằng ĐH Y Dược', 'CCHN Sở Y tế', 'CPR'],
+    licenseNumber: 'CCHN-2021-24680',
+    cprCert: 'CPR-2021-135',
+    blsCert: 'BLS-2021-135',
     reviews: [],
   },
 ];

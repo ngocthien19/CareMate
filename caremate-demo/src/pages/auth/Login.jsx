@@ -45,7 +45,6 @@ export default function Login() {
       }
 
       toast.success(`Xin chào ${result.user.name}!`);
-
       redirectByRole(result.user.role, navigate);
     }, 600);
   };
@@ -55,6 +54,8 @@ export default function Login() {
     const demo = {
       customer: '0901234567',
       nurse: '0902345678',
+      nurse2: '0902345679',
+      nurse3: '0902345680',
       admin: '0903456789',
     };
     setPhone(demo[type]);
@@ -126,7 +127,10 @@ export default function Login() {
         {/* Link đăng ký */}
         <p className="text-sm text-center text-gray-500 mt-6">
           Chưa có tài khoản?{' '}
-          <Link to="/register" className="text-teal-600 font-semibold hover:underline">
+          <Link
+            to="/register"
+            className="text-teal-600 font-semibold hover:underline"
+          >
             Đăng ký ngay
           </Link>
         </p>
@@ -136,7 +140,9 @@ export default function Login() {
           <p className="text-xs text-gray-400 text-center mb-3">
             Hoặc dùng tài khoản demo (mật khẩu: <b>123456</b>)
           </p>
-          <div className="grid grid-cols-3 gap-2">
+
+          {/* Hàng 1: Khách + Admin */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <button
               type="button"
               onClick={() => fillDemo('customer')}
@@ -146,23 +152,41 @@ export default function Login() {
             </button>
             <button
               type="button"
-              onClick={() => fillDemo('nurse')}
-              className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-            >
-              👩‍⚕️ Y tá
-            </button>
-            <button
-              type="button"
               onClick={() => fillDemo('admin')}
               className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
             >
               🛡️ Admin
             </button>
           </div>
+
+          {/* Hàng 2: 3 Y tá */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => fillDemo('nurse')}
+              className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              👩‍⚕️ Lan
+            </button>
+            <button
+              type="button"
+              onClick={() => fillDemo('nurse2')}
+              className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              👨‍⚕️ Minh
+            </button>
+            <button
+              type="button"
+              onClick={() => fillDemo('nurse3')}
+              className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              👩‍⚕️ Hoa
+            </button>
+          </div>
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-6">
-          Demo CareMate TP.HCM 
+          Demo CareMate TP.HCM
         </p>
       </div>
     </div>

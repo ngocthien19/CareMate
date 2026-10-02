@@ -20,6 +20,18 @@ import Report from './pages/customer/Report';
 
 import Medications from './pages/customer/Medications';
 
+import NurseProfile from './pages/nurse/Profile';
+import NurseSchedule from './pages/nurse/Schedule';
+import NurseJobs from './pages/nurse/Jobs';
+import NurseJobDetail from './pages/nurse/JobDetail';
+import NurseStats from './pages/nurse/Stats';
+
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminNurses from './pages/admin/Nurses';
+import AdminReviews from './pages/admin/Reviews';
+import AdminFinance from './pages/admin/Finance';
+import AdminCatalog from './pages/admin/Catalog';
+
 function Placeholder({ title, desc }) {
   return (
     <div className="bg-white rounded-xl p-8 shadow-sm animate-fadeIn">
@@ -103,33 +115,36 @@ export default function App() {
 
         {/* Nurse */}
         <Route path="/nurse/jobs" element={
-          <ProtectedRoute role="nurse"><Placeholder title="Ca khám của tôi" /></ProtectedRoute>
+          <ProtectedRoute role="nurse"><NurseJobs /></ProtectedRoute>
+        } />
+        <Route path="/nurse/jobs/:id" element={
+          <ProtectedRoute role="nurse"><NurseJobDetail /></ProtectedRoute>
         } />
         <Route path="/nurse/schedule" element={
-          <ProtectedRoute role="nurse"><Placeholder title="Quản lý lịch rảnh" /></ProtectedRoute>
+          <ProtectedRoute role="nurse"><NurseSchedule /></ProtectedRoute>
         } />
         <Route path="/nurse/profile" element={
-          <ProtectedRoute role="nurse"><Placeholder title="Hồ sơ chuyên môn" /></ProtectedRoute>
+          <ProtectedRoute role="nurse"><NurseProfile /></ProtectedRoute>
         } />
         <Route path="/nurse/stats" element={
-          <ProtectedRoute role="nurse"><Placeholder title="Đánh giá & Thu nhập" /></ProtectedRoute>
+          <ProtectedRoute role="nurse"><NurseStats /></ProtectedRoute>
         } />
 
         {/* Admin */}
         <Route path="/admin/dashboard" element={
-          <ProtectedRoute role="admin"><Placeholder title="Giám sát ca khám" /></ProtectedRoute>
+          <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>
         } />
         <Route path="/admin/nurses" element={
-          <ProtectedRoute role="admin"><Placeholder title="Quản lý Y tá" /></ProtectedRoute>
+          <ProtectedRoute role="admin"><AdminNurses /></ProtectedRoute>
         } />
         <Route path="/admin/reviews" element={
-          <ProtectedRoute role="admin"><Placeholder title="Duyệt Đánh giá" /></ProtectedRoute>
+          <ProtectedRoute role="admin"><AdminReviews /></ProtectedRoute>
         } />
         <Route path="/admin/finance" element={
-          <ProtectedRoute role="admin"><Placeholder title="Tài chính & VNPay" /></ProtectedRoute>
+          <ProtectedRoute role="admin"><AdminFinance /></ProtectedRoute>
         } />
         <Route path="/admin/catalog" element={
-          <ProtectedRoute role="admin"><Placeholder title="Danh mục Bệnh viện & Chuyên khoa" /></ProtectedRoute>
+          <ProtectedRoute role="admin"><AdminCatalog /></ProtectedRoute>
         } />
 
         <Route path="*" element={<Navigate to={home} replace />} />

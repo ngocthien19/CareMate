@@ -47,8 +47,7 @@ export default function Report() {
 
   // Tìm EHR record tương ứng
   const ehrList = ehrRecords[booking.patientId] || [];
-  const ehr =
-    ehrList.find((e) => e.bookingId === booking.id) || ehrList[0];
+  const ehr = ehrList.find((e) => e.bookingId === booking.id);
 
   // Tính phụ phí
   const info = calcOvertimeFee(booking.startTime, booking.endTime);
