@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import {
-  HOSPITALS, SPECIALTIES, NURSES,
+  HOSPITALS, SPECIALTIES,
   TIME_SLOTS, DISTRICTS,
 } from '../../mock';
 import NurseProfileModal from '../../components/NurseProfileModal';
@@ -13,7 +13,6 @@ import { calcNurseRating } from '../../utils/calcNurseRating';
 
 // ===== HẰNG SỐ =====
 const BASE_PRICE = 499000;
-const OVERTIME_RATE = 120000;
 
 // ===== STEPPER =====
 const STEPS = [
@@ -29,9 +28,12 @@ export default function Booking() {
   const {
     patients,
     addBooking,
+    addTransaction,
     reviews,
     rebookDraft,
     clearRebookDraft,
+    nurses,
+    lockedNurses,
   } = useStore();
 
   const [step, setStep] = useState(1);
@@ -62,11 +64,26 @@ export default function Booking() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rebookDraft]);
 
+  // 👇 Nếu y tá đang chọn bị khóa → clear
+  useEffect(() => {
+    if (form.nurseId && lockedNurses.includes(form.nurseId)) {
+      setForm((f) => ({ ...f, nurseId: null }));
+      toast.error('Y tá bạn chọn đã bị khóa, vui lòng chọn lại');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lockedNurses]);
+
   const update = (key, value) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   const selectedHospital = HOSPITALS.find((h) => h.id === form.hospitalId);
-  const selectedNurse = NURSES.find((n) => n.id === form.nurseId);
+  const selectedNurse = nurses.find((n) => n.id === form.nurseId);
+
+  // 👇 Chỉ hiển thị y tá CHƯA bị khóa
+  const availableNurses = useMemo(
+    () => nurses.filter((n) => !lockedNurses.includes(n.id)),
+    [nurses, lockedNurses]
+  );
 
   // ===== KIỂM TRA NGÀY ĐẶT TRƯỚC 12H =====
   const minDate = useMemo(() => {
@@ -110,8 +127,10 @@ export default function Booking() {
 
   const handlePaymentSuccess = (txn) => {
     const patient = patients.find((p) => p.id === form.patientId);
+    const bookingId = `BK${String(Date.now()).slice(-6)}`;
+
     const newBooking = {
-      id: `BK${String(Date.now()).slice(-6)}`,
+      id: bookingId,
       patientId: form.patientId,
       patientName: patient?.name,
       nurseId: form.nurseId,
@@ -134,10 +153,22 @@ export default function Booking() {
       createdAt: new Date().toISOString(),
     };
 
+    // 👇 THÊM GIAO DỊCH PHÍ GÓI
+    const newTransaction = {
+      id: `T${String(Date.now()).slice(-6)}`,
+      bookingId: bookingId,
+      type: 'base',
+      amount: BASE_PRICE,
+      status: 'success',
+      date: new Date().toISOString().split('T')[0],
+      transactionId: txn.transactionId,
+    };
+
     addBooking(newBooking);
+    addTransaction(newTransaction);   // 👈 THÊM
     setPaying(false);
     toast.success('Đặt lịch thành công!');
-    navigate(`/customer/booking/success/${newBooking.id}`);
+    navigate(`/customer/booking/success/${bookingId}`);
   };
 
   // ===== RENDER =====
@@ -461,9 +492,10 @@ export default function Booking() {
               </div>
               <p className="text-sm text-gray-600 mt-2">
                 Phụ phí phát sinh:{' '}
-                <b className="text-rose-600">
-                  +{OVERTIME_RATE.toLocaleString('vi-VN')} VNĐ / giờ tiếp theo
-                </b>
+                <b className="text-rose-600">+2.000 VNĐ / phút vượt</b>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                VD: Vượt 30 phút = +60.000đ • Vượt 1 giờ = +120.000đ
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 Dưới 15 phút miễn phí • Từ 15 phút tính tròn 1 giờ
@@ -530,73 +562,86 @@ export default function Booking() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {NURSES.map((n) => (
-                <div
-                  key={n.id}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    form.nurseId === n.id
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-gray-200 hover:border-teal-300'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <img
-                      src={n.avatar}
-                      alt={n.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-white shadow"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-800">
-                        {n.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {n.exp} năm kinh nghiệm
-                      </p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-yellow-500 text-xs">⭐</span>
-                        {(() => {
-                          const { rating, count } = calcNurseRating(
-                            n.id,
-                            reviews,
-                            n.rating
-                          );
-                          return (
-                            <>
-                              <span className="text-xs font-semibold text-gray-700">
-                                {rating.toFixed(1)}
-                              </span>
-                              <span className="text-[10px] text-gray-400">
-                                ({count})
-                              </span>
-                            </>
-                          );
-                        })()}
+            {/* 👇 Nếu không còn y tá nào khả dụng */}
+            {availableNurses.length === 0 ? (
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-8 text-center">
+                <div className="text-4xl mb-2">😔</div>
+                <p className="font-bold text-amber-800">
+                  Hiện không có y tá nào khả dụng
+                </p>
+                <p className="text-sm text-amber-600 mt-1">
+                  Vui lòng chọn ngày khác hoặc quay lại sau
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {availableNurses.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-4 rounded-lg border-2 transition ${
+                      form.nurseId === n.id
+                        ? 'border-teal-500 bg-teal-50'
+                        : 'border-gray-200 hover:border-teal-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={n.avatar}
+                        alt={n.name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-white shadow"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm text-gray-800">
+                          {n.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {n.exp} năm kinh nghiệm
+                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-yellow-500 text-xs">⭐</span>
+                          {(() => {
+                            const { rating, count } = calcNurseRating(
+                              n.id,
+                              reviews,
+                              n.rating
+                            );
+                            return (
+                              <>
+                                <span className="text-xs font-semibold text-gray-700">
+                                  {rating.toFixed(1)}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                  ({count})
+                                </span>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => setNurseModal(n)}
-                      className="flex-1 text-xs font-medium py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
-                    >
-                      👁 Xem bằng cấp
-                    </button>
-                    <button
-                      onClick={() => update('nurseId', n.id)}
-                      className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition ${
-                        form.nurseId === n.id
-                          ? 'bg-teal-600 text-white'
-                          : 'bg-rose-500 hover:bg-rose-600 text-white'
-                      }`}
-                    >
-                      {form.nurseId === n.id ? '✓ Đã chọn' : 'Chọn Y tá này'}
-                    </button>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => setNurseModal(n)}
+                        className="flex-1 text-xs font-medium py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                      >
+                        👁 Xem bằng cấp
+                      </button>
+                      <button
+                        onClick={() => update('nurseId', n.id)}
+                        className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition ${
+                          form.nurseId === n.id
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-rose-500 hover:bg-rose-600 text-white'
+                        }`}
+                      >
+                        {form.nurseId === n.id ? '✓ Đã chọn' : 'Chọn Y tá này'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

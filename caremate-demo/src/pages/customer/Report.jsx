@@ -18,6 +18,7 @@ export default function Report() {
     patients,
     ehrRecords,
     updateBooking,
+    addTransaction,
     reviews,
   } = useStore();
 
@@ -64,6 +65,18 @@ export default function Report() {
       overtimeAmount: amount,
       overtimeTransaction: txn,
     });
+
+    // 👇 THÊM GIAO DỊCH PHỤ PHÍ
+    addTransaction({
+      id: `T${String(Date.now()).slice(-6)}`,
+      bookingId: booking.id,
+      type: 'overtime',
+      amount,
+      status: 'success',
+      date: new Date().toISOString().split('T')[0],
+      transactionId: txn.transactionId,
+    });
+
     setOvertimeModalOpen(false);
   };
 
@@ -150,8 +163,8 @@ export default function Report() {
                 Chưa thanh toán phụ phí phát sinh
               </p>
               <p className="text-sm text-orange-600 mt-1">
-                Ca khám vượt {info.overtimeHours.toFixed(2)} giờ. Cần thanh toán{' '}
-                <b>{info.formattedFee} VNĐ</b> để hoàn tất.
+                Ca khám vượt {info.overtimeHours.toFixed(2)} giờ ({info.overtimeMinutes}p). Cần
+                thanh toán <b>{info.formattedFee} VNĐ</b> để hoàn tất.
               </p>
               <button
                 onClick={() => setOvertimeModalOpen(true)}

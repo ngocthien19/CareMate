@@ -48,6 +48,8 @@ export default function NurseJobDetail() {
   // Bệnh án cũ của bệnh nhân (để tra cứu trước khi khám)
   const patientEHR = booking ? ehrRecords[booking.patientId] || [] : [];
 
+  // 👇 Kiểm tra ca này đã có báo cáo chưa
+  const hasReported = patientEHR.some((e) => e.bookingId === booking?.id);
   const [reportOpen, setReportOpen] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
   const [queueModalOpen, setQueueModalOpen] = useState(false);
@@ -90,7 +92,8 @@ export default function NurseJobDetail() {
     updateBooking(booking.id, patch);
     toast.success(`✅ ${action.label}`);
 
-    if (action.openReport) {
+    // 👇 Chỉ mở form báo cáo nếu CHƯA báo cáo
+    if (action.openReport && !hasReported) {
       setTimeout(() => setReportOpen(true), 300);
     }
   };
@@ -104,17 +107,38 @@ export default function NurseJobDetail() {
   };
 
   const handleSOS = () => {
+    const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
     sendSOS({
-        nurseName: user?.name,
-        nurseId: user?.nurseId,
-        bookingId: booking.id,
-        patientName: patient?.name,
+      // Thông tin y tá
+      nurseName: user?.name,
+      nurseId: user?.nurseId,
+      nursePhone: user?.phone,
+      nurseAvatar: user?.avatar,
+      // Thông tin ca khám
+      bookingId: booking.id,
+      status: booking.status,
+      hospitalName: hospital?.name,
+      hospitalAddress: hospital?.address,
+      pickupAddress:
+        booking.pickupType === 'home'
+          ? `${booking.address}, ${booking.district}`
+          : 'Cổng bệnh viện',
+      // Thông tin bệnh nhân
+      patientName: patient?.name,
+      patientRelation: patient?.relation,
+      patientPhone: patient?.emergencyPhone || user?.phone,
+      patientAvatar: patient?.avatar,
+      patientAllergies: patient?.allergies || [],
+      patientConditions: patient?.conditions || [],
+      patientBhkyt: patient?.bhyt,
+      // Thời gian
+      bookingStartTime: booking.startTime,
     });
     toast.error('🚨 ĐÃ GỬI TÍN HIỆU SOS TỚI TỔNG ĐÀI CAREMATE!', {
-        duration: 6000,
+      duration: 3000,
     });
     setSosOpen(false);
-    };
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
@@ -283,6 +307,52 @@ export default function NurseJobDetail() {
         </div>
       </div>
 
+      {/* 👇 Lập báo cáo sau khám */}
+      {booking.status === 'completed' && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          {hasReported ? (
+            // Đã báo cáo
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-2xl">
+                  ✅
+                </div>
+                <div>
+                  <p className="font-bold text-teal-700">
+                    Đã gửi báo cáo sau khám
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Báo cáo đã được lưu vào hồ sơ bệnh nhân
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-3 py-1 rounded-full font-medium whitespace-nowrap">
+                Hoàn tất
+              </span>
+            </div>
+          ) : (
+            // Chưa báo cáo
+            <div className="text-center py-2">
+              <div className="w-14 h-14 mx-auto rounded-full bg-amber-100 flex items-center justify-center text-3xl mb-3">
+                📝
+              </div>
+              <p className="font-bold text-gray-800 mb-1">
+                Chưa lập báo cáo sau khám
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Vui lòng lập báo cáo để lưu vào hồ sơ bệnh nhân
+              </p>
+              <button
+                onClick={() => setReportOpen(true)}
+                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-lg transition inline-flex items-center gap-2"
+              >
+                📝 Lập báo cáo ngay
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal Queue */}
       <Modal
         open={queueModalOpen}
@@ -396,7 +466,11 @@ export default function NurseJobDetail() {
           addEHRRecord(booking.patientId, record);
           toast.success('Đã lưu báo cáo vào hồ sơ bệnh nhân!');
           setReportOpen(false);
-          navigate('/nurse/jobs');
+          // 👇 Chỉ điều hướng nếu lần đầu (từ nút "Đã đưa BN về nhà")
+          // Nếu mở lại từ nút "Lập báo cáo ngay" thì ở lại
+          if (!hasReported) {
+            navigate('/nurse/jobs');
+          }
         }}
       />
     </div>
@@ -409,6 +483,7 @@ export default function NurseJobDetail() {
 function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
   const fileRef = useRef(null);
   const [form, setForm] = useState({
+    doctor: '',
     bp: '',
     pulse: '',
     weight: '',
@@ -455,7 +530,7 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
       bookingId: booking.id,
       date: new Date().toISOString().split('T')[0],
       hospital: hospital?.name || '',
-      doctor: 'BS. Chưa cập nhật',
+      doctor: form.doctor.trim(),        // 👈 Dùng giá trị user nhập
       nurse: nurseName || 'Y tá',
       diagnosis: form.diagnosis,
       advice: form.advice,
@@ -521,6 +596,22 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
               />
             </div>
           </div>
+        </div>
+        {/* Bác sĩ điều trị */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Bác sĩ điều trị
+          </label>
+          <input
+            type="text"
+            value={form.doctor}
+            onChange={(e) => update('doctor', e.target.value)}
+            placeholder="VD: BS. Trần Minh Tuấn"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+          />
+          <p className="text-[10px] text-gray-400 mt-1">
+            💡 Nhập tên bác sĩ khám cho bệnh nhân
+          </p>
         </div>
 
         {/* Chẩn đoán */}

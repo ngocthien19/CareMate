@@ -202,7 +202,13 @@ export default function PatientDetail() {
                         {ehr.hospital}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
-                        {ehr.date} • {ehr.doctor}
+                        {ehr.date}
+                        {ehr.doctor &&
+                          ehr.doctor.trim() !== '' &&
+                          ehr.doctor !== 'BS. Chưa cập nhật' && (
+                            <> • {ehr.doctor}</>
+                          )}
+                        {ehr.nurse && <> • 👩‍⚕️ {ehr.nurse}</>}
                       </p>
                     </div>
                     <span

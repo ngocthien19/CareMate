@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 const LIMIT_HOURS = 4;
-const OVERTIME_RATE = 120000;
+const OVERTIME_RATE_PER_MINUTE = 2000;
 
 /**
  * Đồng hồ đếm giờ ca khám
@@ -42,12 +42,8 @@ export default function ServiceTimer({
   const overtimeHours = Math.max(0, hours - LIMIT_HOURS);
 
   // Làm tròn: dưới 15p miễn phí, 15-60p tính 1h
-  const overtimeFee = (() => {
-    if (overtimeHours <= 0) return 0;
-    const overtimeMin = overtimeHours * 60;
-    if (overtimeMin < 15) return 0;
-    return Math.ceil(overtimeHours) * OVERTIME_RATE;
-  })();
+  const overtimeMinutes = Math.max(0, Math.floor(hours * 60 - LIMIT_HOURS * 60));
+  const overtimeFee = overtimeMinutes * 2000;
 
   const h = Math.floor(hours);
   const m = Math.floor((hours % 1) * 60);
@@ -108,12 +104,17 @@ export default function ServiceTimer({
                 ⚠️ Đã vượt {LIMIT_HOURS} giờ
               </p>
               <p className="text-xs text-orange-600 mt-0.5">
-                Phụ phí: +{OVERTIME_RATE.toLocaleString('vi-VN')} VNĐ/giờ
+                Phụ phí: +2.000 VNĐ/phút
               </p>
             </div>
-            <p className="text-lg font-bold text-orange-700">
-              +{overtimeFee.toLocaleString('vi-VN')}đ
-            </p>
+            <div className="text-right">
+              <p className="text-lg font-bold text-orange-700">
+                +{overtimeFee.toLocaleString('vi-VN')}đ
+              </p>
+              <p className="text-[10px] text-orange-600">
+                ({overtimeMinutes}p × 2.000đ)
+              </p>
+            </div>
           </div>
         </div>
       )}

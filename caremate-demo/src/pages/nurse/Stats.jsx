@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { calcNurseRating, getNurseReviews } from '../../utils/calcNurseRating';
 
 const HOURLY_RATE = 80000; // Lương cứng demo 80k/h
+const MIN_SESSION_MINUTES = 30; // Ca tối thiểu 30 phút mới tính lương (tránh ca test 3 giây)
 
 export default function NurseStats() {
   const { user, bookings, reviews } = useStore();
@@ -20,24 +21,37 @@ export default function NurseStats() {
 
   // Tính tổng giờ
   const stats = useMemo(() => {
-    let totalHours = 0;
-    let overtimeHours = 0;
+    let totalMinutes = 0;
+    let overtimeMinutes = 0;
+    let validSessions = 0;
 
     myCompleted.forEach((b) => {
       if (b.startTime && b.endTime) {
-        const h = (b.endTime - b.startTime) / 3600000;
-        totalHours += h;
-        if (h > 4) overtimeHours += h - 4;
+        const minutes = (b.endTime - b.startTime) / 60000;
+
+        // 👇 Bỏ qua ca quá ngắn (< 30 phút) — coi như ca test
+        if (minutes < MIN_SESSION_MINUTES) return;
+
+        validSessions++;
+        totalMinutes += minutes;
+        if (minutes > 4 * 60) {
+          overtimeMinutes += minutes - 4 * 60;
+        }
       }
     });
 
-    const totalSalary = totalHours * HOURLY_RATE;
-    const overtimeBonus = overtimeHours * HOURLY_RATE * 1.5;
+    const totalHours = totalMinutes / 60;
+    const overtimeHours = overtimeMinutes / 60;
+
+    // 👇 Làm tròn tiền đến 1.000đ
+    const totalSalary = Math.round((totalHours * HOURLY_RATE) / 1000) * 1000;
+    const overtimeBonus = Math.round((overtimeHours * HOURLY_RATE * 1.5) / 1000) * 1000;
 
     return {
-      count: myCompleted.length,
-      totalHours: totalHours.toFixed(1),
-      overtimeHours: overtimeHours.toFixed(1),
+      count: validSessions,
+      totalMinutes: Math.floor(totalMinutes),
+      totalHours,
+      overtimeHours,
       totalSalary,
       overtimeBonus,
       grandTotal: totalSalary + overtimeBonus,
@@ -47,6 +61,14 @@ export default function NurseStats() {
   // Rating động
   const { rating, count: reviewCount } = calcNurseRating(nurseId, reviews, 5.0);
   const myReviews = getNurseReviews(nurseId, reviews);
+
+  // Helper hiển thị giờ:phút
+  const fmtDuration = (hours) => {
+    const h = Math.floor(hours);
+    const m = Math.round((hours % 1) * 60);
+    if (h === 0) return `${m}p`;
+    return `${h}h ${m}p`;
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
@@ -105,8 +127,16 @@ export default function NurseStats() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Ca hoàn thành', value: stats.count, icon: '📋' },
-          { label: 'Tổng giờ', value: `${stats.totalHours}h`, icon: '⏱️' },
-          { label: 'Giờ tăng ca', value: `${stats.overtimeHours}h`, icon: '🔥' },
+          {
+            label: 'Tổng giờ',
+            value: fmtDuration(stats.totalHours),
+            icon: '⏱️',
+          },
+          {
+            label: 'Giờ tăng ca',
+            value: fmtDuration(stats.overtimeHours),
+            icon: '🔥',
+          },
           {
             label: 'Tổng thu nhập',
             value: `${(stats.grandTotal / 1000).toFixed(0)}k`,
@@ -132,7 +162,8 @@ export default function NurseStats() {
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">
-              Lương cứng ({stats.totalHours}h × {HOURLY_RATE.toLocaleString('vi-VN')}đ)
+              Lương cứng ({fmtDuration(stats.totalHours)} ×{' '}
+              {HOURLY_RATE.toLocaleString('vi-VN')}đ/h)
             </span>
             <span className="font-semibold text-gray-800">
               {stats.totalSalary.toLocaleString('vi-VN')}đ
@@ -140,7 +171,7 @@ export default function NurseStats() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">
-              Thưởng tăng ca ({stats.overtimeHours}h × 150%)
+              Thưởng tăng ca ({fmtDuration(stats.overtimeHours)} × 150%)
             </span>
             <span className="font-semibold text-orange-600">
               +{stats.overtimeBonus.toLocaleString('vi-VN')}đ
@@ -156,6 +187,69 @@ export default function NurseStats() {
         <p className="text-xs text-gray-400 mt-4 italic">
           * Số liệu demo, sẽ được đối soát với bảng lương thực tế
         </p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          * Chỉ tính các ca có thời lượng ≥ 30 phút (bỏ qua ca test)
+        </p>
+      </div>
+
+      {/* Danh sách ca hoàn thành — để nurse tự kiểm tra */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-bold text-gray-800 mb-4">
+          📋 Ca làm việc đã hoàn thành ({myCompleted.length})
+        </h2>
+
+        {myCompleted.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-6">
+            Chưa có ca nào hoàn thành
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {myCompleted.map((b) => {
+              const minutes =
+                b.startTime && b.endTime
+                  ? (b.endTime - b.startTime) / 60000
+                  : 0;
+              const hours = minutes / 60;
+              const isOvertime = hours > 4;
+              const isTooShort = minutes < MIN_SESSION_MINUTES;
+
+              return (
+                <div
+                  key={b.id}
+                  className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${
+                    isTooShort
+                      ? 'bg-gray-50 border-gray-200 opacity-60'
+                      : 'bg-teal-50 border-teal-200'
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {b.id}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {b.date} • {b.pickupTime}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-mono font-bold text-gray-800">
+                      {fmtDuration(hours)}
+                    </p>
+                    {isTooShort && (
+                      <p className="text-[10px] text-gray-400">
+                        Bỏ qua (ca test)
+                      </p>
+                    )}
+                    {isOvertime && !isTooShort && (
+                      <p className="text-[10px] text-orange-600">
+                        +{fmtDuration(hours - 4)} tăng ca
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Danh sách reviews */}

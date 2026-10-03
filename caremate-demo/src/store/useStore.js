@@ -73,6 +73,9 @@ export const useStore = create(
 
       // ===== ACTIONS =====
       addBooking: (b) => set((s) => ({ bookings: [...s.bookings, b] })),
+      // 👇 THÊM DÒNG NÀY
+      addTransaction: (t) =>
+        set((s) => ({ transactions: [...s.transactions, t] })),
       updateBooking: (id, patch) =>
         set((s) => ({
           bookings: s.bookings.map((b) =>
@@ -98,6 +101,34 @@ export const useStore = create(
             },
           };
         }),
+      // 👇 Xóa y tá (kèm account)
+      deleteNurse: (nurseId) =>
+        set((s) => {
+          const nurse = s.nurses.find((n) => n.id === nurseId);
+          return {
+            nurses: s.nurses.filter((n) => n.id !== nurseId),
+            accounts: s.accounts.filter(
+              (a) => !(a.role === 'nurse' && a.nurseId === nurseId)
+            ),
+            lockedNurses: s.lockedNurses.filter((id) => id !== nurseId),
+            // Xóa lịch rảnh
+            nurseSchedules: Object.fromEntries(
+              Object.entries(s.nurseSchedules).filter(
+                ([key]) => key !== String(nurseId)
+              )
+            ),
+          };
+        }),
+
+      // 👇 Cập nhật ảnh pháp lý
+      updateNurseLegalDocs: (nurseId, docs) =>
+        set((s) => ({
+          nurses: s.nurses.map((n) =>
+            n.id === nurseId
+              ? { ...n, legalDocs: { ...n.legalDocs, ...docs } }
+              : n
+          ),
+        })),
 
       toggleMedicationTick: (key) =>
         set((s) => ({

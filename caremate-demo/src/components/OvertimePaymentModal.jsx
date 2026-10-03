@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
 import VNPayMock from './VNPayMock';
-import { calcOvertimeFee } from '../utils/calcOvertimeFee';
+import { calcOvertimeFee, BASE_PRICE } from '../utils/calcOvertimeFee';
 
 /**
  * Modal quyết toán phụ phí phát sinh
@@ -56,7 +56,7 @@ export default function OvertimePaymentModal({ open, onClose, booking, onPaid })
                 </p>
                 <p className="text-sm text-orange-600 mt-1">
                   Theo quy định gói, thời gian vượt quá sẽ tính phụ phí{' '}
-                  <b>+120.000 VNĐ/giờ</b>
+                  <b>+2.000 VNĐ/phút</b>
                 </p>
               </div>
             </div>
@@ -80,7 +80,7 @@ export default function OvertimePaymentModal({ open, onClose, booking, onPaid })
             <div className="flex justify-between text-orange-700">
               <span>Vượt giờ</span>
               <span className="font-semibold">
-                {info.overtimeHours.toFixed(2)} giờ
+                {info.overtimeMinutes} phút ({info.overtimeHours.toFixed(2)} giờ)
               </span>
             </div>
           </div>
@@ -92,7 +92,10 @@ export default function OvertimePaymentModal({ open, onClose, booking, onPaid })
               +{info.formattedFee} VNĐ
             </p>
             <p className="text-xs text-gray-500 mt-2">
-              Phí gói gốc {BASE_PRICE_LABEL} đã thanh toán khi đặt lịch
+              Phụ phí = {info.overtimeMinutes}p × 2.000đ = {info.formattedFee}đ
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Phí gói gốc {BASE_PRICE.toLocaleString('vi-VN')} VNĐ đã thanh toán khi đặt lịch
             </p>
           </div>
 
@@ -152,5 +155,3 @@ export default function OvertimePaymentModal({ open, onClose, booking, onPaid })
     </>
   );
 }
-
-const BASE_PRICE_LABEL = '499.000 VNĐ';
