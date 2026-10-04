@@ -34,11 +34,11 @@ export default function AdminNurses() {
   return (
     <div className="max-w-6xl mx-auto space-y-5">
       {/* ===== HEADER — nền TEAL đơn sắc ===== */}
-      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-5 md:p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
 
-        <div className="relative flex items-center justify-between gap-3 flex-wrap">
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
@@ -46,16 +46,16 @@ export default function AdminNurses() {
                 Quản trị nhân sự
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-xl md:text-2xl font-bold text-white">
               👥 Quản lý Y tá
             </h1>
-            <p className="text-sm text-teal-50 mt-1">
+            <p className="text-xs md:text-sm text-teal-50 mt-1">
               Xác thực hồ sơ pháp lý, khóa/mở tài khoản nhân sự
             </p>
           </div>
           <button
             onClick={() => setAddOpen(true)}
-            className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-rose-900/20 hover:-translate-y-0.5 flex items-center gap-2"
+            className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 md:px-5 py-2.5 rounded-xl transition shadow-lg shadow-rose-900/20 hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <span className="text-lg leading-none">+</span> Thêm Y tá mới
           </button>
@@ -63,7 +63,7 @@ export default function AdminNurses() {
       </div>
 
       {/* ===== STATS — 3 ô màu ===== */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-gray-50 rounded-2xl border-2 border-gray-200 p-4 shadow-sm">
           <p className="text-xs text-gray-600 font-semibold mb-1">
             📋 Tổng Y tá
@@ -88,121 +88,138 @@ export default function AdminNurses() {
         </div>
       </div>
 
-      {/* ===== BẢNG ===== */}
+      {/* ===== BẢNG — có scroll ngang trên mobile ===== */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-teal-50 border-b-2 border-teal-100">
-            <tr>
-              <th className="text-left px-4 py-3 font-bold text-teal-700">
-                Y tá
-              </th>
-              <th className="text-left px-4 py-3 font-bold text-teal-700">
-                Chứng chỉ
-              </th>
-              <th className="text-left px-4 py-3 font-bold text-teal-700">
-                Đánh giá
-              </th>
-              <th className="text-left px-4 py-3 font-bold text-teal-700">
-                Trạng thái
-              </th>
-              <th className="text-right px-4 py-3 font-bold text-teal-700">
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {nurses.map((n) => {
-              const locked = lockedNurses.includes(n.id);
-              const { rating, count } = calcNurseRating(
-                n.id,
-                reviews,
-                n.rating
-              );
-              return (
-                <tr
-                  key={n.id}
-                  className={`hover:bg-teal-50/30 transition ${
-                    locked ? 'bg-rose-50/30' : ''
-                  }`}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={n.avatar}
-                        alt={n.name}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-teal-200 ring-2 ring-teal-50"
-                      />
-                      <div>
-                        <p className="font-bold text-gray-800">{n.name}</p>
-                        <p className="text-xs text-gray-500">
-                          ID #{n.id} • {n.exp} năm KN
-                        </p>
+        {/* Scroll wrapper */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[800px]">
+            <thead className="bg-teal-50 border-b-2 border-teal-100">
+              <tr>
+                <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
+                  Y tá
+                </th>
+                <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
+                  Chứng chỉ
+                </th>
+                <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
+                  Đánh giá
+                </th>
+                <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
+                  Trạng thái
+                </th>
+                <th className="text-right px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {nurses.map((n) => {
+                const locked = lockedNurses.includes(n.id);
+                const { rating, count } = calcNurseRating(
+                  n.id,
+                  reviews,
+                  n.rating
+                );
+                return (
+                  <tr
+                    key={n.id}
+                    className={`hover:bg-teal-50/30 transition ${
+                      locked ? 'bg-rose-50/30' : ''
+                    }`}
+                  >
+                    <td className="px-3 md:px-4 py-3">
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <img
+                          src={n.avatar}
+                          alt={n.name}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-teal-200 ring-2 ring-teal-50 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-800 truncate">
+                            {n.name}
+                          </p>
+                          <p className="text-xs text-gray-500 whitespace-nowrap">
+                            ID #{n.id} • {n.exp} năm KN
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-xs text-gray-600">
-                      <p>
-                        CCHN: <b className="text-teal-700">{n.licenseNumber || '—'}</b>
+                    </td>
+                    <td className="px-3 md:px-4 py-3">
+                      <div className="text-xs text-gray-600 whitespace-nowrap">
+                        <p>
+                          CCHN:{' '}
+                          <b className="text-teal-700">
+                            {n.licenseNumber || '—'}
+                          </b>
+                        </p>
+                        <p>CPR: {n.cprCert || '—'}</p>
+                      </div>
+                    </td>
+                    <td className="px-3 md:px-4 py-3">
+                      <p className="font-bold text-rose-600 whitespace-nowrap">
+                        ⭐ {rating.toFixed(1)}
                       </p>
-                      <p>CPR: {n.cprCert || '—'}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-bold text-rose-600">
-                      ⭐ {rating.toFixed(1)}
-                    </p>
-                    <p className="text-xs text-gray-500">{count} đánh giá</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    {locked ? (
-                      <span className="text-xs bg-rose-100 text-rose-700 border-2 border-rose-200 px-2 py-1 rounded-full font-bold">
-                        🔒 Đã khóa
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-teal-100 text-teal-700 border-2 border-teal-200 px-2 py-1 rounded-full font-bold">
-                        ✓ Hoạt động
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleView(n)}
-                        className="text-xs font-bold text-teal-700 border-2 border-teal-300 hover:bg-teal-500 hover:text-white hover:border-teal-500 px-3 py-1.5 rounded-lg transition"
-                      >
-                        👁 Xem
-                      </button>
-                      <button
-                        onClick={() => {
-                          toggleNurseLock(n.id);
-                          toast.success(
+                      <p className="text-xs text-gray-500 whitespace-nowrap">
+                        {count} đánh giá
+                      </p>
+                    </td>
+                    <td className="px-3 md:px-4 py-3">
+                      {locked ? (
+                        <span className="text-xs bg-rose-100 text-rose-700 border-2 border-rose-200 px-2 py-1 rounded-full font-bold whitespace-nowrap inline-block">
+                          🔒 Đã khóa
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-teal-100 text-teal-700 border-2 border-teal-200 px-2 py-1 rounded-full font-bold whitespace-nowrap inline-block">
+                          ✓ Hoạt động
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 md:px-4 py-3">
+                      <div className="flex justify-end gap-1.5 md:gap-2 whitespace-nowrap">
+                        <button
+                          onClick={() => handleView(n)}
+                          className="text-xs font-bold text-teal-700 border-2 border-teal-300 hover:bg-teal-500 hover:text-white hover:border-teal-500 px-2 md:px-3 py-1.5 rounded-lg transition"
+                        >
+                          👁 Xem
+                        </button>
+                        <button
+                          onClick={() => {
+                            toggleNurseLock(n.id);
+                            toast.success(
+                              locked
+                                ? `Đã mở khóa ${n.name}`
+                                : `Đã khóa ${n.name}`
+                            );
+                          }}
+                          className={`text-xs font-bold px-2 md:px-3 py-1.5 rounded-lg transition border-2 whitespace-nowrap ${
                             locked
-                              ? `Đã mở khóa ${n.name}`
-                              : `Đã khóa ${n.name}`
-                          );
-                        }}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition border-2 ${
-                          locked
-                            ? 'text-teal-700 border-teal-300 hover:bg-teal-500 hover:text-white hover:border-teal-500'
-                            : 'text-rose-600 border-rose-300 hover:bg-rose-500 hover:text-white hover:border-rose-500'
-                        }`}
-                      >
-                        {locked ? '🔓 Mở' : '🔒 Khóa'}
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(n)}
-                        className="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-3 py-1.5 rounded-lg transition shadow-md shadow-rose-200"
-                      >
-                        🗑 Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                              ? 'text-teal-700 border-teal-300 hover:bg-teal-500 hover:text-white hover:border-teal-500'
+                              : 'text-rose-600 border-rose-300 hover:bg-rose-500 hover:text-white hover:border-rose-500'
+                          }`}
+                        >
+                          {locked ? '🔓 Mở' : '🔒 Khóa'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(n)}
+                          className="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-2 md:px-3 py-1.5 rounded-lg transition shadow-md shadow-rose-200 whitespace-nowrap"
+                        >
+                          🗑 Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Hint scroll trên mobile */}
+        <div className="sm:hidden bg-teal-50 border-t-2 border-teal-100 px-4 py-2 text-center">
+          <p className="text-[10px] text-teal-600 font-semibold">
+            ← Vuốt ngang để xem thêm →
+          </p>
+        </div>
       </div>
 
       {/* ===== MODAL XEM CHI TIẾT ===== */}
@@ -217,7 +234,10 @@ export default function AdminNurses() {
             nurse={editing}
             onUpdate={(docs) => {
               useStore.getState().updateNurseLegalDocs(editing.id, docs);
-              setEditing((prev) => ({ ...prev, legalDocs: { ...prev.legalDocs, ...docs } }));
+              setEditing((prev) => ({
+                ...prev,
+                legalDocs: { ...prev.legalDocs, ...docs },
+              }));
               toast.success('Đã cập nhật ảnh pháp lý');
             }}
           />
@@ -255,7 +275,9 @@ export default function AdminNurses() {
               ⚠️
             </div>
             <p className="text-sm text-gray-700">
-              Bạn chắc chắn muốn xóa <b className="text-rose-600">{confirmDelete.name}</b> khỏi hệ thống?
+              Bạn chắc chắn muốn xóa{' '}
+              <b className="text-rose-600">{confirmDelete.name}</b> khỏi hệ
+              thống?
             </p>
             <p className="text-xs text-gray-500">
               Tài khoản đăng nhập của y tá này cũng sẽ bị xóa. Hành động không
@@ -323,22 +345,25 @@ function NurseLegalDetail({ nurse, onUpdate }) {
         <img
           src={nurse.avatar}
           alt={nurse.name}
-          className="w-16 h-16 rounded-full object-cover border-2 border-teal-200 ring-2 ring-teal-50"
+          className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-teal-200 ring-2 ring-teal-50 shrink-0"
         />
-        <div>
-          <p className="text-lg font-bold text-gray-800">{nurse.name}</p>
-          <p className="text-sm text-gray-500">
+        <div className="min-w-0">
+          <p className="text-base md:text-lg font-bold text-gray-800 truncate">
+            {nurse.name}
+          </p>
+          <p className="text-xs md:text-sm text-gray-500">
             {nurse.age} tuổi • {nurse.exp} năm kinh nghiệm
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            CCHN: <b className="text-teal-700">{nurse.licenseNumber || '—'}</b>
+          <p className="text-xs text-gray-500 mt-1 truncate">
+            CCHN:{' '}
+            <b className="text-teal-700">{nurse.licenseNumber || '—'}</b>
           </p>
         </div>
       </div>
 
       {/* Hồ sơ pháp lý */}
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
             📋 Hồ sơ pháp lý
           </p>
@@ -358,7 +383,7 @@ function NurseLegalDetail({ nurse, onUpdate }) {
           }}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {Object.entries(LEGAL_DOC_LABELS).map(([key, label]) => {
             const url = docs[key];
             return (
@@ -519,7 +544,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
         💡 Tài khoản đăng nhập mặc định: SĐT + mật khẩu <b>123456</b>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
             Họ và tên *
@@ -548,7 +573,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
             Tuổi
@@ -592,7 +617,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="p-3 rounded-xl bg-rose-50 border border-rose-100">
           <label className="block text-sm font-bold text-rose-700 mb-1">
             Chứng chỉ CPR
@@ -633,7 +658,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
           onChange={handleFileChange}
         />
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {Object.entries(LEGAL_DOC_LABELS).map(([key, label]) => {
             const url = docs[key];
             return (
