@@ -370,7 +370,7 @@ export const EHR_RECORDS = {
       diagnosis: 'Tăng huyết áp độ 1, đái tháo đường type 2 kiểm soát tốt',
       advice: 'Uống thuốc đều đặn, hạn chế muối, tái khám sau 1 tháng',
       vitals: { bp: '135/85', pulse: 78, weight: 65 },
-      prescription: 'Amlodipine 5mg (1v/sáng), Metformin 500mg (1v/sáng, 1v/tối), Vitamin B12 (1v/trưa)',
+      prescription: 'Amlodipine 5mg (1v/sáng), Metformin 500mg (1v/sáng) , Metformin 500mg (1v/tối), Vitamin B12 (1v/trưa)',
       followupDate: '2026-10-07', // 👈 CÒN 3 NGÀY → sẽ hiện banner nhắc
       images: [
         { name: 'Đơn thuốc', url: 'https://picsum.photos/seed/rx1/600/400' },
