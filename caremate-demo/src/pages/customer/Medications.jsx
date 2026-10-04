@@ -10,8 +10,6 @@ import {
   makeTickKey,
 } from '../../utils/parseMedication';
 
-// Ngày hôm nay theo timezone VN (UTC+7)
-// Tránh lỗi: toISOString() trả UTC → VN lệch 7 tiếng
 function getTodayVN() {
   const now = new Date();
   const vn = new Date(now.getTime() + 7 * 60 * 60 * 1000);
@@ -38,7 +36,6 @@ export default function Medications() {
   const [activePatientId, setActivePatientId] = useState(patients[0]?.id);
   const [today, setToday] = useState(getTodayVN());
 
-  // 👇 Auto check mỗi phút — qua ngày mới thì reset UI + toast
   useEffect(() => {
     const interval = setInterval(() => {
       const newToday = getTodayVN();
@@ -59,20 +56,17 @@ export default function Medications() {
   const activePatient = patients.find((p) => p.id === activePatientId);
   const ehrList = ehrRecords[activePatientId] || [];
 
-  // Đơn thuốc mới nhất
   const latestEhr = useMemo(() => {
     return ehrList
       .filter((e) => e.prescription)
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
   }, [ehrList]);
 
-  // Parse đơn thuốc
   const meds = useMemo(
     () => parsePrescription(latestEhr?.prescription || ''),
     [latestEhr]
   );
 
-  // Nhóm theo cữ
   const medsByTime = useMemo(() => {
     const result = { morning: [], noon: [], evening: [] };
     meds.forEach((m) => {
@@ -83,7 +77,6 @@ export default function Medications() {
     return result;
   }, [meds]);
 
-  // Đếm tick
   const counts = useMemo(() => {
     const total = meds.reduce((acc, m) => acc + m.times.length, 0);
     let done = 0;
@@ -96,7 +89,6 @@ export default function Medications() {
     return { total, done };
   }, [meds, medicationTicks, activePatientId, today]);
 
-  // Ngày tái khám gần nhất
   const followup = useMemo(() => {
     const withFollowup = ehrList
       .filter((e) => e.followupDate)
@@ -116,7 +108,6 @@ export default function Medications() {
       )
     : null;
 
-  // Booking gần nhất để re-book
   const lastBooking = bookings
     .filter((b) => b.patientId === activePatientId)
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
@@ -142,7 +133,6 @@ export default function Medications() {
       nurseId: lastBooking.nurseId,
     };
 
-    // 👇 Dùng store (sạch hơn sessionStorage)
     setRebookDraft(draft);
     toast.success('Đã điền lại thông tin lịch cũ');
     navigate('/customer/booking');
@@ -153,39 +143,58 @@ export default function Medications() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Tủ thuốc & Nhắc lịch
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Theo dõi uống thuốc hàng ngày và lịch tái khám của người thân
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          Hôm nay: <b>{formatDate(today)}</b>
-        </p>
+      {/* ===== HEADER ===== */}
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
+
+        <div className="relative flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
+              <span className="text-[10px] font-semibold text-white">
+                Nhắc thuốc thông minh
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-white">
+              💊 Tủ thuốc & Nhắc lịch
+            </h1>
+            <p className="text-sm text-teal-50 mt-1">
+              Theo dõi uống thuốc hàng ngày và lịch tái khám của người thân
+            </p>
+            <p className="text-xs text-teal-100/80 mt-1">
+              Hôm nay: <b className="text-white">{formatDate(today)}</b>
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Tabs người thân */}
+      {/* ===== TABS NGƯỜI THÂN — active hồng ===== */}
       <div className="flex gap-2 flex-wrap">
         {patients.map((p) => (
           <button
             key={p.id}
             onClick={() => setActivePatientId(p.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border-2 transition ${
               activePatientId === p.id
-                ? 'bg-teal-600 text-white border-teal-600'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-teal-400'
+                ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-200'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-rose-500 hover:text-white hover:border-rose-500'
             }`}
           >
             {p.avatar ? (
               <img
                 src={p.avatar}
                 alt={p.name}
-                className="w-6 h-6 rounded-full object-cover"
+                className="w-6 h-6 rounded-full object-cover border border-white/50"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  activePatientId === p.id
+                    ? 'bg-white/20 text-white'
+                    : 'bg-teal-100 text-teal-700'
+                }`}
+              >
                 {p.name?.charAt(0)}
               </div>
             )}
@@ -196,9 +205,9 @@ export default function Medications() {
         ))}
       </div>
 
-      {/* Nhắc tái khám (≤ 3 ngày) */}
+      {/* ===== NHẮC TÁI KHÁM ===== */}
       {followup && daysUntilFollowup !== null && daysUntilFollowup <= 3 && (
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5">
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <span className="text-3xl">🔔</span>
             <div className="flex-1">
@@ -218,9 +227,9 @@ export default function Medications() {
               <button
                 onClick={handleRebook}
                 disabled={!lastBooking}
-                className="mt-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-5 py-2 rounded-lg transition"
+                className="mt-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-5 py-2 rounded-lg transition shadow-md shadow-rose-200"
               >
-                🔁 Đặt lại lịch với Điều dưỡng cũ
+                Đặt lại lịch với Điều dưỡng cũ
               </button>
               {lastBooking && (
                 <p className="text-[10px] text-amber-600 mt-2">
@@ -232,16 +241,16 @@ export default function Medications() {
         </div>
       )}
 
-      {/* Card đếm ngược tái khám */}
+      {/* ===== CARD ĐẾM NGƯỢC TÁI KHÁM ===== */}
       {followup && (
-        <div className="bg-gradient-to-br from-teal-50 to-rose-50 rounded-xl border-2 border-teal-200 p-5">
+        <div className="bg-white rounded-2xl border-2 border-teal-200 p-5 shadow-sm">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-white shadow flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-teal-50 border-2 border-teal-200 flex items-center justify-center shadow-sm">
                 <span className="text-3xl">📅</span>
               </div>
               <div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 font-semibold">
                   Lịch tái khám tiếp theo
                 </p>
                 <p className="text-lg font-bold text-gray-800">
@@ -252,31 +261,31 @@ export default function Medications() {
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500">Còn lại</p>
-              <p className="text-3xl font-bold text-teal-600">
+            <div className="text-right bg-rose-50 border-2 border-rose-200 rounded-xl px-4 py-2">
+              <p className="text-xs text-rose-600 font-semibold">Còn lại</p>
+              <p className="text-3xl font-bold text-rose-600">
                 {daysUntilFollowup}
               </p>
-              <p className="text-xs text-gray-500">ngày</p>
+              <p className="text-xs text-rose-500">ngày</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Progress bar */}
+      {/* ===== PROGRESS BAR ===== */}
       {meds.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
               💊 Tiến độ uống thuốc hôm nay
             </p>
-            <p className="text-sm text-teal-700 font-bold">
+            <p className="text-sm text-rose-600 font-bold bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
               {counts.done} / {counts.total} cữ
             </p>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-teal-500 transition-all duration-500"
+              className="h-full bg-rose-500 transition-all duration-500 rounded-full"
               style={{
                 width: `${
                   counts.total > 0 ? (counts.done / counts.total) * 100 : 0
@@ -285,18 +294,18 @@ export default function Medications() {
             />
           </div>
           {counts.done === counts.total && counts.total > 0 && (
-            <p className="text-xs text-teal-700 font-semibold mt-2">
-              ✅ Đã uống đủ thuốc hôm nay!
+            <p className="text-xs text-rose-600 font-bold mt-2 flex items-center gap-1">
+              <span className="text-base">✅</span> Đã uống đủ thuốc hôm nay!
             </p>
           )}
         </div>
       )}
 
-      {/* Tủ thuốc */}
+      {/* ===== TỦ THUỐC ===== */}
       {meds.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center border-2 border-dashed border-gray-200">
+        <div className="bg-teal-50 rounded-2xl p-12 text-center border-2 border-dashed border-teal-200">
           <div className="text-5xl mb-3">💊</div>
-          <p className="text-gray-500">
+          <p className="text-gray-600 font-medium">
             Chưa có đơn thuốc nào. Tủ thuốc sẽ tự động cập nhật sau ca khám.
           </p>
         </div>
@@ -309,19 +318,21 @@ export default function Medications() {
             return (
               <div
                 key={time}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+                className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm"
               >
-                <div className="bg-gray-50 px-5 py-3 border-b flex items-center justify-between">
+                <div className="bg-teal-50 px-5 py-3 border-b-2 border-teal-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{info.icon}</span>
+                    <div className="w-10 h-10 rounded-full bg-white border-2 border-teal-200 flex items-center justify-center shadow-sm">
+                      <span className="text-xl">{info.icon}</span>
+                    </div>
                     <div>
-                      <p className="font-bold text-gray-800">Cữ {info.label}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-bold text-teal-700">Cữ {info.label}</p>
+                      <p className="text-xs text-teal-600">
                         Nhắc lúc {info.time}
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs bg-white text-teal-700 border border-teal-200 px-2.5 py-1 rounded-full font-semibold">
                     {list.length} thuốc
                   </span>
                 </div>
@@ -341,10 +352,10 @@ export default function Medications() {
                         className="px-5 py-3 flex items-center gap-3"
                       >
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 ${
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 border-2 ${
                             ticked
-                              ? 'bg-teal-100 text-teal-600'
-                              : 'bg-gray-100 text-gray-400'
+                              ? 'bg-rose-100 text-rose-600 border-rose-300'
+                              : 'bg-gray-50 text-gray-400 border-gray-200'
                           }`}
                         >
                           💊
@@ -367,10 +378,10 @@ export default function Medications() {
                         </div>
                         <button
                           onClick={() => handleToggle(med.id, time)}
-                          className={`shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition ${
+                          className={`shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition border-2 ${
                             ticked
-                              ? 'bg-teal-600 text-white'
-                              : 'bg-white border-2 border-teal-500 text-teal-600 hover:bg-teal-50'
+                              ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-200'
+                              : 'bg-white border-rose-400 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500'
                           }`}
                         >
                           {ticked ? '✓ Đã uống' : 'Đã uống'}
@@ -385,21 +396,26 @@ export default function Medications() {
         </div>
       )}
 
-      {/* Đặt lại lịch cũ */}
+      {/* ===== ĐẶT LẠI LỊCH CŨ ===== */}
       {lastBooking && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div>
-              <p className="font-semibold text-gray-800">
-                🔁 Đặt lại lịch với Điều dưỡng cũ
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Tự động điền: {lastHospital?.name} • Y tá {lastNurse?.name}
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 border-2 border-rose-200 flex items-center justify-center shrink-0">
+                <span className="text-lg">🔁</span>
+              </div>
+              <div>
+                <p className="font-bold text-gray-800">
+                  Đặt lại lịch với Điều dưỡng cũ
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Tự động điền: {lastHospital?.name} • Y tá {lastNurse?.name}
+                </p>
+              </div>
             </div>
             <button
               onClick={handleRebook}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-2.5 rounded-lg transition text-sm"
+              className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2.5 rounded-lg transition text-sm shadow-md shadow-rose-200 hover:-translate-y-0.5"
             >
               Đặt lại ngay
             </button>
@@ -407,11 +423,14 @@ export default function Medications() {
         </div>
       )}
 
-      {/* Thông báo push */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <p className="text-xs text-blue-700">
-          📢 Hệ thống sẽ tự động nhắc qua <b>Web / SMS / Zalo</b> vào các cữ:{' '}
-          <b>07:00 — 11:30 — 18:30</b> hàng ngày
+      {/* ===== THÔNG BÁO PUSH ===== */}
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4">
+        <p className="text-xs text-blue-700 flex items-start gap-2">
+          {/* <span className="text-base shrink-0">📢</span> */}
+          <span>
+            Hệ thống sẽ tự động nhắc qua <b>Web / SMS / Zalo</b> vào các cữ:{' '}
+            <b>07:00 — 11:30 — 18:30</b> hàng ngày
+          </span>
         </p>
       </div>
     </div>

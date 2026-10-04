@@ -31,23 +31,29 @@ export default function BookingSuccess() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Success card */}
-      <div className="bg-white rounded-2xl p-8 text-center border border-gray-200 shadow-sm">
-        <div className="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center mb-4">
-          <span className="text-4xl">✅</span>
+      <div className="bg-white rounded-2xl p-8 text-center border-2 border-teal-200 shadow-lg shadow-teal-100/50 relative overflow-hidden">
+        {/* Confetti bg */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-rose-100 rounded-full blur-3xl opacity-60" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-teal-100 rounded-full blur-3xl opacity-60" />
+
+        <div className="relative">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-4 shadow-lg shadow-teal-200 animate-softPulse">
+            <span className="text-4xl">✓</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Đặt lịch thành công!
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Mã đơn: <b className="text-teal-700">{booking.id}</b>
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Y tá sẽ liên hệ trước giờ hẹn để xác nhận
+          </p>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Đặt lịch thành công!
-        </h1>
-        <p className="text-sm text-gray-500 mt-2">
-          Mã đơn: <b className="text-teal-700">{booking.id}</b>
-        </p>
-        <p className="text-sm text-gray-500 mt-1">
-          Y tá sẽ liên hệ trước giờ hẹn để xác nhận
-        </p>
       </div>
 
       {/* Chi tiết đơn */}
-      <div className="bg-white rounded-2xl p-6 mt-4 border border-gray-200">
+      <div className="bg-white rounded-2xl p-6 mt-4 border border-gray-200 shadow-sm">
         <h2 className="font-bold text-gray-800 mb-4">Chi tiết lịch hẹn</h2>
 
         {/* Y tá */}
@@ -55,7 +61,7 @@ export default function BookingSuccess() {
           <img
             src={nurse?.avatar}
             alt={nurse?.name}
-            className="w-12 h-12 rounded-full object-cover"
+            className="w-12 h-12 rounded-full object-cover border-2 border-teal-100"
           />
           <div>
             <p className="text-sm font-semibold text-gray-800">
@@ -108,7 +114,7 @@ export default function BookingSuccess() {
           </div>
           <div className="flex justify-between pt-2 border-t">
             <span className="font-semibold text-gray-700">Đã thanh toán</span>
-            <span className="font-bold text-teal-700">
+            <span className="font-bold text-rose-600">
               {booking.amount?.toLocaleString('vi-VN')} VNĐ
             </span>
           </div>
@@ -119,7 +125,7 @@ export default function BookingSuccess() {
       <div className="flex gap-3 mt-6">
         <button
           onClick={() => navigate('/customer/tracking')}
-          className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition"
+          className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-lg transition shadow-lg shadow-rose-200 hover:-translate-y-0.5"
         >
           📍 Theo dõi ca khám
         </button>

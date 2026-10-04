@@ -17,12 +17,11 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isReadAll, setIsReadAll] = useState(false);       // đã cuộn hết điều khoản
-  const [agreedTerms, setAgreedTerms] = useState(false);   // đã tick đồng ý
-  const [step, setStep] = useState('form'); // 'form' | 'terms' | 'otp'
+  const [isReadAll, setIsReadAll] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [step, setStep] = useState('form');
   const [loading, setLoading] = useState(false);
 
-  // Bước 1: Validate form → chuyển sang Terms
   const handleContinue = () => {
     if (!name.trim()) {
       toast.error('Vui lòng nhập họ và tên');
@@ -43,7 +42,6 @@ export default function Register() {
     setStep('terms');
   };
 
-  // Bước 2: Đồng ý điều khoản → gửi OTP
   const handleAgreeTerms = () => {
     if (!agreedTerms) {
       toast.error('Vui lòng tích đồng ý điều khoản');
@@ -57,7 +55,6 @@ export default function Register() {
     }, 800);
   };
 
-  // Bước 3: Xác thực OTP → tạo tài khoản
   const handleVerifyOTP = () => {
     if (otp !== MOCK_OTP) {
       toast.error('OTP không đúng. Nhập 123456');
@@ -71,7 +68,8 @@ export default function Register() {
         password,
         name: name.trim(),
         role: 'customer',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces',
+        avatar:
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces',
       };
 
       const result = registerAccount(newAccount);
@@ -88,7 +86,6 @@ export default function Register() {
     }, 800);
   };
 
-  // Detect cuộn hết điều khoản
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     if (scrollTop + clientHeight >= scrollHeight - 20) {
@@ -96,7 +93,6 @@ export default function Register() {
     }
   };
 
-  // Stepper hiển thị tiến trình
   const Stepper = () => {
     const steps = [
       { key: 'form', label: 'Thông tin' },
@@ -123,7 +119,9 @@ export default function Register() {
               </div>
               <span
                 className={`text-[10px] mt-1 ${
-                  i <= currentIdx ? 'text-teal-700 font-semibold' : 'text-gray-400'
+                  i <= currentIdx
+                    ? 'text-teal-700 font-semibold'
+                    : 'text-gray-400'
                 }`}
               >
                 {s.label}
@@ -145,9 +143,14 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-rose-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 animate-fadeIn">
-        {/* Logo */}
         <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-teal-600">CareMate</h1>
+          {/* 👇 Logo CM */}
+          <div className="inline-flex items-center gap-2 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm">
+              CM
+            </div>
+            <span className="text-2xl font-bold text-teal-600">CareMate</span>
+          </div>
           <p className="text-sm text-gray-500 mt-1">
             Đăng ký tài khoản Khách hàng
           </p>
@@ -155,10 +158,9 @@ export default function Register() {
 
         <Stepper />
 
-        {/* ============ BƯỚC 1: FORM ============ */}
+        {/* BƯỚC 1: FORM */}
         {step === 'form' && (
           <div className="space-y-4">
-            {/* Họ và tên */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Họ và tên
@@ -172,7 +174,6 @@ export default function Register() {
               />
             </div>
 
-            {/* SĐT */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Số điện thoại
@@ -188,7 +189,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Mật khẩu */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Mật khẩu
@@ -211,7 +211,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Xác nhận mật khẩu */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Xác nhận mật khẩu
@@ -237,14 +236,14 @@ export default function Register() {
             <button
               type="button"
               onClick={handleContinue}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition"
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-rose-200"
             >
               Tiếp tục
             </button>
           </div>
         )}
 
-        {/* ============ BƯỚC 2: ĐIỀU KHOẢN ============ */}
+        {/* BƯỚC 2: ĐIỀU KHOẢN */}
         {step === 'terms' && (
           <div className="space-y-4">
             <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -288,7 +287,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Checkbox đồng ý */}
             <label
               className={`flex items-start gap-2 p-3 rounded-lg border transition cursor-pointer ${
                 isReadAll
@@ -326,7 +324,7 @@ export default function Register() {
                 type="button"
                 onClick={handleAgreeTerms}
                 disabled={!agreedTerms || loading}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50"
+                className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 shadow-lg shadow-rose-200"
               >
                 {loading ? 'Đang gửi OTP...' : 'Đồng ý & Tiếp tục'}
               </button>
@@ -334,7 +332,7 @@ export default function Register() {
           </div>
         )}
 
-        {/* ============ BƯỚC 3: OTP ============ */}
+        {/* BƯỚC 3: OTP */}
         {step === 'otp' && (
           <div className="space-y-4">
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 text-sm">
@@ -366,7 +364,7 @@ export default function Register() {
               type="button"
               onClick={handleVerifyOTP}
               disabled={otp.length !== 6 || loading}
-              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50"
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 shadow-lg shadow-rose-200"
             >
               {loading ? 'Đang xác thực...' : 'Xác nhận & Tạo tài khoản'}
             </button>
@@ -384,7 +382,6 @@ export default function Register() {
           </div>
         )}
 
-        {/* Link về Login */}
         {step === 'form' && (
           <p className="text-sm text-center text-gray-500 mt-6">
             Đã có tài khoản?{' '}
@@ -395,7 +392,9 @@ export default function Register() {
         )}
 
         <p className="text-xs text-gray-400 text-center mt-4">
-          Demo CareMate TP.HCM
+          <Link to="/" className="hover:text-teal-600">
+            ← Về trang chủ
+          </Link>
         </p>
       </div>
     </div>

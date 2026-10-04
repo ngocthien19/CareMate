@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useStore } from './store/useStore';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
@@ -75,6 +76,7 @@ export default function App() {
       <Toaster position="top-center" />
       <Routes>
         {/* Public */}
+        <Route path="/" element={<Landing />} />
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to={home} replace /> : <Login />}
@@ -147,7 +149,8 @@ export default function App() {
           <ProtectedRoute role="admin"><AdminCatalog /></ProtectedRoute>
         } />
 
-        <Route path="*" element={<Navigate to={home} replace />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

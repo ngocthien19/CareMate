@@ -32,13 +32,25 @@ export default function AdminReviews() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Quản lý đánh giá
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Kiểm soát chất lượng dịch vụ — xử lý khiếu nại
-        </p>
+      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
+
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
+            <span className="text-[10px] font-semibold text-white">
+              Kiểm soát chất lượng
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-white">
+            ⭐ Quản lý đánh giá
+          </h1>
+          <p className="text-sm text-teal-50 mt-1">
+            Kiểm soát chất lượng dịch vụ — xử lý khiếu nại
+          </p>
+        </div>
       </div>
 
       {/* Cảnh báo cờ vàng */}

@@ -46,17 +46,14 @@ export default function Report() {
   const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
   const nurse = NURSES.find((n) => n.id === booking.nurseId);
 
-  // Tìm EHR record tương ứng
   const ehrList = ehrRecords[booking.patientId] || [];
   const ehr = ehrList.find((e) => e.bookingId === booking.id);
 
-  // Tính phụ phí
   const info = calcOvertimeFee(booking.startTime, booking.endTime);
   const isOvertimePaid =
     booking.overtimePaymentStatus === 'paid' || !info.isOvertime;
   const needsPayment = info.isOvertime && !isOvertimePaid;
 
-  // Đã có review chưa?
   const existingReview = reviews.find((r) => r.bookingId === booking.id);
 
   const handleOvertimePaid = (txn, amount) => {
@@ -66,7 +63,6 @@ export default function Report() {
       overtimeTransaction: txn,
     });
 
-    // 👇 THÊM GIAO DỊCH PHỤ PHÍ
     addTransaction({
       id: `T${String(Date.now()).slice(-6)}`,
       bookingId: booking.id,
@@ -83,9 +79,7 @@ export default function Report() {
   if (!ehr) {
     return (
       <div className="max-w-3xl mx-auto text-center py-12">
-        <p className="text-gray-500">
-          Báo cáo chưa được y tá cập nhật
-        </p>
+        <p className="text-gray-500">Báo cáo chưa được y tá cập nhật</p>
         <button
           onClick={() => navigate('/customer/report')}
           className="text-teal-600 font-semibold mt-3 hover:underline"
@@ -101,61 +95,72 @@ export default function Report() {
       {/* Breadcrumb */}
       <button
         onClick={() => navigate('/customer/report')}
-        className="text-sm text-gray-500 hover:text-teal-600 transition"
+        className="text-sm text-gray-500 hover:text-teal-600 transition flex items-center gap-1"
       >
         ← Danh sách báo cáo
       </button>
 
-      {/* Header */}
-      <div className="bg-gradient-to-br from-teal-50 to-rose-50 rounded-xl p-6 border-2 border-teal-200">
-        <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
-          <div className="flex items-center gap-3">
-            {patient?.avatar ? (
-              <img
-                src={patient.avatar}
-                alt={patient.name}
-                className="w-14 h-14 rounded-full object-cover border-2 border-white shadow"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xl">
-                {patient?.name?.charAt(0)}
+      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-400/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-2xl" />
+
+        <div className="relative">
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+            <div className="flex items-center gap-3">
+              {patient?.avatar ? (
+                <img
+                  src={patient.avatar}
+                  alt={patient.name}
+                  className="w-14 h-14 rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-white/20 text-white flex items-center justify-center font-bold text-xl ring-4 ring-white/30">
+                  {patient?.name?.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  {patient?.name}
+                </h1>
+                <p className="text-xs text-teal-50">
+                  🏥 {hospital?.name} • 🩺 {booking.specialty}
+                </p>
               </div>
-            )}
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">
-                {patient?.name}
-              </h1>
-              <p className="text-xs text-gray-500">
-                {hospital?.name} • {booking.specialty}
+            </div>
+            <span className="text-xs bg-white/20 text-white border border-white/30 px-3 py-1.5 rounded-full font-bold">
+              ✓ Hoàn tất
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-white/15 rounded-lg p-3">
+              <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
+                Mã đơn
+              </p>
+              <p className="font-bold text-white text-sm">{booking.id}</p>
+            </div>
+            <div className="bg-white/15 rounded-lg p-3">
+              <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
+                Ngày khám
+              </p>
+              <p className="font-bold text-white text-sm">{booking.date}</p>
+            </div>
+            <div className="bg-white/15 rounded-lg p-3">
+              <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
+                Thời lượng
+              </p>
+              <p className="font-bold text-white text-sm">
+                {info.formattedDuration}
               </p>
             </div>
-          </div>
-          <span className="text-xs bg-white/80 text-teal-700 border border-teal-200 px-3 py-1.5 rounded-full font-semibold">
-            ✓ Hoàn tất
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-          <div>
-            <p className="text-gray-500">Mã đơn</p>
-            <p className="font-semibold text-gray-800">{booking.id}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Ngày khám</p>
-            <p className="font-semibold text-gray-800">{booking.date}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Thời lượng</p>
-            <p className="font-semibold text-gray-800">
-              {info.formattedDuration}
-            </p>
           </div>
         </div>
       </div>
 
-      {/* Cảnh báo chưa thanh toán phụ phí */}
+      {/* Cảnh báo chưa thanh toán phụ phí — nền cam */}
       {needsPayment && (
-        <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+        <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <span className="text-2xl">💳</span>
             <div className="flex-1">
@@ -163,12 +168,13 @@ export default function Report() {
                 Chưa thanh toán phụ phí phát sinh
               </p>
               <p className="text-sm text-orange-600 mt-1">
-                Ca khám vượt {info.overtimeHours.toFixed(2)} giờ ({info.overtimeMinutes}p). Cần
-                thanh toán <b>{info.formattedFee} VNĐ</b> để hoàn tất.
+                Ca khám vượt {info.overtimeHours.toFixed(2)} giờ (
+                {info.overtimeMinutes}p). Cần thanh toán{' '}
+                <b>{info.formattedFee} VNĐ</b> để hoàn tất.
               </p>
               <button
                 onClick={() => setOvertimeModalOpen(true)}
-                className="mt-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2 rounded-lg transition"
+                className="mt-3 bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2 rounded-lg transition shadow-md shadow-rose-200"
               >
                 💳 Thanh toán ngay
               </button>
@@ -177,9 +183,9 @@ export default function Report() {
         </div>
       )}
 
-      {/* Đã thanh toán phụ phí */}
+      {/* Đã thanh toán phụ phí — nền teal */}
       {info.isOvertime && isOvertimePaid && (
-        <div className="bg-teal-50 border-2 border-teal-300 rounded-xl p-4">
+        <div className="bg-teal-50 border-2 border-teal-300 rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">✅</span>
             <div>
@@ -195,56 +201,66 @@ export default function Report() {
         </div>
       )}
 
-      {/* Chẩn đoán */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+      {/* ===== CHẨN ĐOÁN ===== */}
+      <div className="bg-white rounded-2xl border-2 border-teal-200 p-5 shadow-sm">
+        <h2 className="font-bold text-teal-700 mb-4 flex items-center gap-2">
           🩺 Chẩn đoán & dặn dò của bác sĩ
         </h2>
         <div className="space-y-3 text-sm">
-          <div>
-            <p className="text-xs text-gray-400 mb-1">Chẩn đoán</p>
-            <p className="text-gray-800">{ehr.diagnosis}</p>
+          <div className="bg-teal-50 rounded-lg p-3 border border-teal-100">
+            <p className="text-xs text-teal-600 font-semibold mb-1">
+              Chẩn đoán
+            </p>
+            <p className="text-gray-800 font-medium">{ehr.diagnosis}</p>
           </div>
           {ehr.advice && (
-            <div>
-              <p className="text-xs text-gray-400 mb-1">Dặn dò</p>
+            <div className="bg-rose-50 rounded-lg p-3 border border-rose-100">
+              <p className="text-xs text-rose-600 font-semibold mb-1">
+                Dặn dò
+              </p>
               <p className="text-gray-800">{ehr.advice}</p>
             </div>
           )}
           {ehr.followupDate && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-700 font-semibold">
-                📅 Ngày hẹn tái khám: <b>{ehr.followupDate}</b>
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800 font-bold">
+                📅 Ngày hẹn tái khám: {ehr.followupDate}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Sinh hiệu */}
+      {/* ===== SINH HIỆU — 3 ô màu ===== */}
       {ehr.vitals &&
         (ehr.vitals.bp || ehr.vitals.pulse || ehr.vitals.weight) && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
+            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               💓 Chỉ số sinh hiệu
             </h2>
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-teal-50 rounded-lg p-3 text-center">
-                <p className="text-[10px] text-gray-500 mb-1">Huyết áp</p>
+              <div className="bg-teal-50 rounded-xl p-3 text-center border-2 border-teal-200">
+                <p className="text-[10px] text-teal-700 font-semibold mb-1">
+                  Huyết áp
+                </p>
                 <p className="text-lg font-bold text-teal-700">
                   {ehr.vitals.bp || '—'}
                 </p>
               </div>
-              <div className="bg-teal-50 rounded-lg p-3 text-center">
-                <p className="text-[10px] text-gray-500 mb-1">Mạch</p>
-                <p className="text-lg font-bold text-teal-700">
+              <div className="bg-rose-50 rounded-xl p-3 text-center border-2 border-rose-200">
+                <p className="text-[10px] text-rose-700 font-semibold mb-1">
+                  Mạch
+                </p>
+                <p className="text-lg font-bold text-rose-600">
                   {ehr.vitals.pulse || '—'}
                 </p>
                 <p className="text-[10px] text-gray-500">bpm</p>
               </div>
-              <div className="bg-teal-50 rounded-lg p-3 text-center">
-                <p className="text-[10px] text-gray-500 mb-1">Cân nặng</p>
-                <p className="text-lg font-bold text-teal-700">
+              <div className="bg-amber-50 rounded-xl p-3 text-center border-2 border-amber-200">
+                <p className="text-[10px] text-amber-700 font-semibold mb-1">
+                  Cân nặng
+                </p>
+                <p className="text-lg font-bold text-amber-600">
                   {ehr.vitals.weight || '—'}
                 </p>
                 <p className="text-[10px] text-gray-500">kg</p>
@@ -253,24 +269,24 @@ export default function Report() {
           </div>
         )}
 
-      {/* Đơn thuốc */}
+      {/* ===== ĐƠN THUỐC ===== */}
       {ehr.prescription && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+        <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             💊 Đơn thuốc
           </h2>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-gray-800 whitespace-pre-line">
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+            <p className="text-sm text-gray-800 whitespace-pre-line font-medium">
               {ehr.prescription}
             </p>
           </div>
         </div>
       )}
 
-      {/* Ảnh */}
+      {/* ===== ẢNH ===== */}
       {ehr.images?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+        <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             📸 Hình ảnh cận lâm sàng
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -278,14 +294,14 @@ export default function Report() {
               <button
                 key={i}
                 onClick={() => setLightboxImage(img)}
-                className="relative group rounded-lg overflow-hidden border border-gray-200 hover:border-teal-400 transition"
+                className="relative group rounded-lg overflow-hidden border-2 border-teal-200 hover:border-teal-400 transition"
               >
                 <img
                   src={img.url}
                   alt={img.name}
                   className="w-full h-32 object-cover group-hover:scale-105 transition"
                 />
-                <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-2 py-1 truncate text-left">
+                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] px-2 py-1 truncate text-left font-medium">
                   {img.name}
                 </span>
               </button>
@@ -294,59 +310,63 @@ export default function Report() {
         </div>
       )}
 
-      {/* Y tá */}
+      {/* ===== Y TÁ ===== */}
       {nurse && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="font-bold text-gray-800 mb-3">
+        <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             👩‍⚕️ Y tá phụ trách
           </h2>
           <div className="flex items-center gap-3">
             <img
               src={nurse.avatar}
               alt={nurse.name}
-              className="w-14 h-14 rounded-full object-cover border-2 border-teal-100"
+              className="w-14 h-14 rounded-full object-cover border-2 border-teal-200 ring-2 ring-teal-50"
             />
             <div className="flex-1">
-              <p className="font-semibold text-gray-800">{nurse.name}</p>
+              <p className="font-bold text-gray-800">{nurse.name}</p>
               {(() => {
-                const { rating, count } = calcNurseRating(nurse.id, reviews, nurse.rating);
-                return (
-                    <p className="text-xs text-gray-500">
-                    ⭐ {rating.toFixed(1)} • {nurse.exp} năm • {count} đánh giá
-                    </p>
+                const { rating, count } = calcNurseRating(
+                  nurse.id,
+                  reviews,
+                  nurse.rating
                 );
-            })()}
+                return (
+                  <p className="text-xs text-gray-500">
+                    ⭐ {rating.toFixed(1)} • {nurse.exp} năm • {count} đánh giá
+                  </p>
+                );
+              })()}
             </div>
           </div>
         </div>
       )}
 
-      {/* Đánh giá */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="font-bold text-gray-800 mb-3">
+      {/* ===== ĐÁNH GIÁ ===== */}
+      <div className="bg-white rounded-2xl border-2 border-rose-200 p-5 shadow-sm">
+        <h2 className="font-bold text-rose-700 mb-4 flex items-center gap-2">
           ⭐ Đánh giá chất lượng phục vụ
         </h2>
         {existingReview ? (
-          <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+          <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-yellow-500">
+              <span className="text-yellow-500 text-lg">
                 {'⭐'.repeat(existingReview.stars)}
               </span>
-              <span className="text-sm font-semibold text-teal-700">
+              <span className="text-sm font-bold text-teal-700">
                 {existingReview.stars}/5 sao
               </span>
             </div>
             {existingReview.comment && (
               <p className="text-sm text-gray-700">{existingReview.comment}</p>
             )}
-            <p className="text-xs text-teal-600 mt-2">
+            <p className="text-xs text-teal-600 mt-2 font-medium">
               ✓ Cảm ơn bạn đã đánh giá!
             </p>
           </div>
         ) : (
           <button
             onClick={() => setReviewModalOpen(true)}
-            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition"
+            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-rose-200 hover:-translate-y-0.5"
           >
             ⭐ Đánh giá Y tá ngay
           </button>
@@ -386,14 +406,12 @@ export default function Report() {
               alt={lightboxImage.name}
               className="w-full max-h-[85vh] object-contain rounded-lg"
             />
-            <div className="absolute top-3 right-3 flex gap-2">
-              <button
-                onClick={() => setLightboxImage(null)}
-                className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center"
-              >
-                ✕
-              </button>
-            </div>
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center"
+            >
+              ✕
+            </button>
             <p className="text-white text-sm text-center mt-3">
               {lightboxImage.name}
             </p>

@@ -41,17 +41,26 @@ export default function Layout({ children }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
+      {/* ===== SIDEBAR ===== */}
       <aside className="w-64 bg-white border-r flex flex-col">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold text-teal-600">CareMate</h1>
+        {/* Logo — bấm về Landing */}
+        <button
+          onClick={() => navigate('/')}
+          className="p-4 border-b text-left hover:bg-gray-50 transition"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-teal-200">
+              CM
+            </div>
+            <span className="text-xl font-bold text-teal-600">CareMate</span>
+          </div>
           <p className="text-xs text-gray-500 mt-1">{ROLE_LABEL[user.role]}</p>
-        </div>
+        </button>
 
         <nav className="flex-1 p-3 space-y-1">
           {menu.map((item) => {
@@ -60,9 +69,9 @@ export default function Layout({ children }) {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 transition ${
+                className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition ${
                   active
-                    ? 'bg-teal-50 text-teal-700 font-semibold'
+                    ? 'bg-gradient-to-r from-teal-50 to-teal-100/50 text-teal-700 font-semibold border-l-2 border-teal-500'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -83,8 +92,10 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col">
+      {/* ===== MAIN ===== */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Header */}
         <header className="bg-white border-b px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500">
@@ -95,7 +106,7 @@ export default function Layout({ children }) {
             <img
               src={user.avatar}
               alt=""
-              className="w-9 h-9 rounded-full border"
+              className="w-9 h-9 rounded-full border-2 border-teal-100"
             />
             <div className="text-right">
               <div className="text-sm font-semibold text-gray-800">
@@ -105,7 +116,7 @@ export default function Layout({ children }) {
             </div>
             <button
               onClick={handleLogout}
-              className="ml-2 text-xs text-rose-600 hover:underline"
+              className="ml-2 text-xs text-rose-600 hover:underline font-semibold"
             >
               Đăng xuất
             </button>

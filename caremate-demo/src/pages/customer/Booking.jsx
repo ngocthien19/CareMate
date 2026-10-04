@@ -35,33 +35,30 @@ export default function Booking() {
     clearRebookDraft,
     nurses,
     lockedNurses,
-    customHospitals,          // 👈 THÊM
-    customSpecialties,        // 👈 THÊM
+    customHospitals,
+    customSpecialties,
   } = useStore();
 
   const [step, setStep] = useState(1);
   const [nurseModal, setNurseModal] = useState(null);
   const [paying, setPaying] = useState(false);
 
-  // 👇 Ưu tiên dùng data từ store (nếu Admin đã sửa), fallback mock
   const HOSPITALS = customHospitals || MOCK_HOSPITALS;
   const SPECIALTIES = customSpecialties || MOCK_SPECIALTIES;
 
-  // Form state
   const [form, setForm] = useState({
     patientId: patients[0]?.id || null,
     hospitalId: null,
     specialty: null,
     date: '',
     time: '',
-    pickupType: 'home', // 'home' | 'hospital_gate'
+    pickupType: 'home',
     district: '',
     address: '',
     nurseId: null,
     agreed: false,
   });
 
-  // 👇 Đọc draft "Đặt lại 1 chạm" từ store
   useEffect(() => {
     if (rebookDraft) {
       setForm((f) => ({ ...f, ...rebookDraft }));
@@ -71,7 +68,6 @@ export default function Booking() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rebookDraft]);
 
-  // 👇 Nếu y tá đang chọn bị khóa → clear
   useEffect(() => {
     if (form.nurseId && lockedNurses.includes(form.nurseId)) {
       setForm((f) => ({ ...f, nurseId: null }));
@@ -80,27 +76,22 @@ export default function Booking() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lockedNurses]);
 
-  const update = (key, value) =>
-  setForm((f) => ({ ...f, [key]: value }));
+  const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  // 👇 THÊM DÒNG NÀY
   const selectedHospital = HOSPITALS.find((h) => h.id === form.hospitalId);
   const selectedNurse = nurses.find((n) => n.id === form.nurseId);
 
-  // 👇 Chỉ hiển thị y tá CHƯA bị khóa
   const availableNurses = useMemo(
     () => nurses.filter((n) => !lockedNurses.includes(n.id)),
     [nurses, lockedNurses]
   );
 
-  // ===== KIỂM TRA NGÀY ĐẶT TRƯỚC 12H =====
   const minDate = useMemo(() => {
     const d = new Date();
     d.setHours(d.getHours() + 12);
     return d.toISOString().split('T')[0];
   }, []);
 
-  // ===== ĐIỀU HƯỚNG BƯỚC =====
   const canNext = () => {
     if (step === 1) return form.hospitalId && form.specialty;
     if (step === 2) {
@@ -124,7 +115,6 @@ export default function Booking() {
 
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
 
-  // ===== THANH TOÁN =====
   const handlePay = () => {
     if (!form.agreed) {
       toast.error('Vui lòng tích ủy quyền làm thủ tục');
@@ -161,7 +151,6 @@ export default function Booking() {
       createdAt: new Date().toISOString(),
     };
 
-    // 👇 THÊM GIAO DỊCH PHÍ GÓI
     const newTransaction = {
       id: `T${String(Date.now()).slice(-6)}`,
       bookingId: bookingId,
@@ -173,25 +162,38 @@ export default function Booking() {
     };
 
     addBooking(newBooking);
-    addTransaction(newTransaction);   // 👈 THÊM
+    addTransaction(newTransaction);
     setPaying(false);
     toast.success('Đặt lịch thành công!');
     navigate(`/customer/booking/success/${bookingId}`);
   };
 
-  // ===== RENDER =====
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Đặt lịch khám</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Đồng hành cùng cha mẹ tại bệnh viện TP.HCM
-        </p>
+      {/* Header — nền TEAL đơn sắc */}
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg mb-6">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
+
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
+            <span className="text-[10px] font-semibold text-white">
+              Đặt lịch đồng hành
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-white">
+            📅 Đặt lịch khám
+          </h1>
+          <p className="text-sm text-teal-50 mt-1">
+            Đồng hành cùng cha mẹ tại bệnh viện TP.HCM
+          </p>
+        </div>
       </div>
 
       {/* Stepper */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
         <div className="flex items-center justify-between">
           {STEPS.map((s, i) => {
             const done = step > s.key;
@@ -204,7 +206,7 @@ export default function Booking() {
                       done
                         ? 'bg-teal-500 text-white'
                         : current
-                        ? 'bg-teal-600 text-white ring-4 ring-teal-100'
+                        ? 'bg-rose-500 text-white ring-4 ring-rose-100'
                         : 'bg-gray-200 text-gray-500'
                     }`}
                   >
@@ -213,9 +215,9 @@ export default function Booking() {
                   <span
                     className={`text-[10px] mt-1.5 text-center whitespace-pre-line leading-tight ${
                       current
-                        ? 'text-teal-700 font-semibold'
+                        ? 'text-rose-600 font-semibold'
                         : done
-                        ? 'text-teal-600'
+                        ? 'text-teal-600 font-medium'
                         : 'text-gray-400'
                     }`}
                   >
@@ -224,7 +226,7 @@ export default function Booking() {
                 </div>
                 {i < STEPS.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 mx-1 -mt-5 ${
+                    className={`h-0.5 flex-1 mx-1 -mt-5 rounded ${
                       step > s.key ? 'bg-teal-500' : 'bg-gray-200'
                     }`}
                   />
@@ -236,7 +238,7 @@ export default function Booking() {
       </div>
 
       {/* Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
         {/* ============ BƯỚC 1 ============ */}
         {step === 1 && (
           <div className="space-y-6 animate-fadeIn">
@@ -249,7 +251,7 @@ export default function Booking() {
               </p>
             </div>
 
-            {/* Chọn người bệnh */}
+            {/* Người bệnh */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Người bệnh
@@ -261,8 +263,8 @@ export default function Booking() {
                     onClick={() => update('patientId', p.id)}
                     className={`p-3 rounded-lg border-2 text-left transition ${
                       form.patientId === p.id
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-rose-400 bg-rose-50'
+                        : 'border-gray-200 hover:border-rose-200'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -270,10 +272,10 @@ export default function Booking() {
                         <img
                           src={p.avatar}
                           alt={p.name}
-                          className="w-10 h-10 rounded-full object-cover"
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold">
                           {p.name?.charAt(0)}
                         </div>
                       )}
@@ -296,7 +298,7 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Chọn bệnh viện */}
+            {/* Bệnh viện */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Bệnh viện tại TP.HCM
@@ -308,8 +310,8 @@ export default function Booking() {
                     onClick={() => update('hospitalId', h.id)}
                     className={`p-3 rounded-lg border-2 text-left transition ${
                       form.hospitalId === h.id
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-rose-400 bg-rose-50'
+                        : 'border-gray-200 hover:border-rose-200'
                     }`}
                   >
                     <p className="font-semibold text-sm text-gray-800">
@@ -323,7 +325,7 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Chọn chuyên khoa */}
+            {/* Chuyên khoa */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Chuyên khoa cần khám
@@ -333,10 +335,10 @@ export default function Booking() {
                   <button
                     key={s}
                     onClick={() => update('specialty', s)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition ${
                       form.specialty === s
                         ? 'bg-teal-600 text-white border-teal-600'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-teal-400'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-teal-400'
                     }`}
                   >
                     {s}
@@ -369,11 +371,11 @@ export default function Booking() {
                 min={minDate}
                 value={form.date}
                 onChange={(e) => update('date', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none"
               />
             </div>
 
-            {/* Giờ đón */}
+            {/* Giờ */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Khung giờ đón
@@ -383,10 +385,10 @@ export default function Booking() {
                   <button
                     key={t}
                     onClick={() => update('time', t)}
-                    className={`py-2 rounded-lg text-sm font-medium border transition ${
+                    className={`py-2 rounded-lg text-sm font-medium border-2 transition ${
                       form.time === t
-                        ? 'bg-teal-600 text-white border-teal-600'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-teal-400'
+                        ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-200'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-rose-300'
                     }`}
                   >
                     {t}
@@ -395,7 +397,7 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Điểm đón */}
+            {/* Hình thức đón */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Hình thức đón
@@ -405,8 +407,8 @@ export default function Booking() {
                   onClick={() => update('pickupType', 'home')}
                   className={`p-4 rounded-lg border-2 text-left transition ${
                     form.pickupType === 'home'
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-rose-400 bg-rose-50'
+                      : 'border-gray-200 hover:border-rose-200'
                   }`}
                 >
                   <div className="text-2xl mb-1">🏠</div>
@@ -421,8 +423,8 @@ export default function Booking() {
                   onClick={() => update('pickupType', 'hospital_gate')}
                   className={`p-4 rounded-lg border-2 text-left transition ${
                     form.pickupType === 'hospital_gate'
-                      ? 'border-teal-500 bg-teal-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-rose-400 bg-rose-50'
+                      : 'border-gray-200 hover:border-rose-200'
                   }`}
                 >
                   <div className="text-2xl mb-1">🏥</div>
@@ -446,7 +448,7 @@ export default function Booking() {
                   <select
                     value={form.district}
                     onChange={(e) => update('district', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none"
                   >
                     <option value="">— Chọn quận —</option>
                     {DISTRICTS.map((d) => (
@@ -465,7 +467,7 @@ export default function Booking() {
                     value={form.address}
                     onChange={(e) => update('address', e.target.value)}
                     placeholder="Số nhà, tên đường, phường..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     ⚠️ Chỉ hỗ trợ địa chỉ trong TP.HCM
@@ -488,8 +490,8 @@ export default function Booking() {
               </p>
             </div>
 
-            {/* Giá */}
-            <div className="bg-gradient-to-br from-teal-50 to-rose-50 rounded-xl p-5 border-2 border-teal-200">
+            {/* Giá — nền teal đơn sắc */}
+            <div className="bg-teal-50 rounded-xl p-5 border-2 border-teal-200">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-teal-700">
                   {BASE_PRICE.toLocaleString('vi-VN')}
@@ -508,43 +510,31 @@ export default function Booking() {
             </div>
 
             {/* Quyền lợi */}
-            <div>
-              <p className="font-semibold text-gray-700 mb-3">
+            <div className="bg-rose-50 rounded-xl p-5 border border-rose-100">
+              <p className="font-bold text-rose-700 mb-3">
                 ✅ Gói đã bao gồm
               </p>
               <div className="space-y-2 text-sm text-gray-700">
-                <div className="flex items-start gap-2">
-                  <span className="text-teal-600 shrink-0">✓</span>
-                  <span>
-                    Xe taxi/công nghệ đưa đón 2 chiều nội thành TP.HCM
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-teal-600 shrink-0">✓</span>
-                  <span>
-                    Điều dưỡng 1:1 hỗ trợ làm thủ tục, bốc số, dìu đỡ, vào
-                    phòng khám cùng bác sĩ
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-teal-600 shrink-0">✓</span>
-                  <span>Báo cáo y tế số hóa & lưu bệnh án trọn đời</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-teal-600 shrink-0">✓</span>
-                  <span>
-                    Hệ thống nhắc lịch uống thuốc & nhắc lịch tái khám
-                  </span>
-                </div>
+                {[
+                  'Xe taxi/công nghệ đưa đón 2 chiều nội thành TP.HCM',
+                  'Điều dưỡng 1:1 hỗ trợ làm thủ tục, bốc số, dìu đỡ, vào phòng khám cùng bác sĩ',
+                  'Báo cáo y tế số hóa & lưu bệnh án trọn đời',
+                  'Hệ thống nhắc lịch uống thuốc & nhắc lịch tái khám',
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-teal-600 shrink-0 font-bold">✓</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Loại trừ */}
-            <div className="bg-rose-50 border-2 border-rose-200 rounded-lg p-4">
-              <p className="text-sm font-bold text-rose-700 mb-1">
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+              <p className="text-sm font-bold text-red-700 mb-1">
                 ⚠️ Quy định loại trừ
               </p>
-              <p className="text-sm text-rose-700">
+              <p className="text-sm text-red-700">
                 <b>
                   Gói KHÔNG bao gồm viện phí, phí xét nghiệm, chụp chiếu và
                   tiền thuốc. Bệnh nhân/gia đình tự thanh toán trực tiếp tại
@@ -567,7 +557,6 @@ export default function Booking() {
               </p>
             </div>
 
-            {/* 👇 Nếu không còn y tá nào khả dụng */}
             {availableNurses.length === 0 ? (
               <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-8 text-center">
                 <div className="text-4xl mb-2">😔</div>
@@ -585,15 +574,15 @@ export default function Booking() {
                     key={n.id}
                     className={`p-4 rounded-lg border-2 transition ${
                       form.nurseId === n.id
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-teal-300'
+                        ? 'border-rose-400 bg-rose-50'
+                        : 'border-gray-200 hover:border-rose-200'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <img
                         src={n.avatar}
                         alt={n.name}
-                        className="w-14 h-14 rounded-full object-cover border-2 border-white shadow"
+                        className="w-14 h-14 rounded-full object-cover border-2 border-teal-100 shadow"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm text-gray-800">
@@ -628,13 +617,13 @@ export default function Booking() {
                     <div className="flex gap-2 mt-3">
                       <button
                         onClick={() => setNurseModal(n)}
-                        className="flex-1 text-xs font-medium py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                        className="flex-1 text-xs font-medium py-1.5 border border-teal-300 rounded-lg text-teal-700 hover:bg-teal-50 transition"
                       >
                         👁 Xem bằng cấp
                       </button>
                       <button
                         onClick={() => update('nurseId', n.id)}
-                        className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition ${
+                        className={`flex-1 text-xs font-semibold py-1.5 rounded-lg transition shadow-sm ${
                           form.nurseId === n.id
                             ? 'bg-teal-600 text-white'
                             : 'bg-rose-500 hover:bg-rose-600 text-white'
@@ -663,7 +652,7 @@ export default function Booking() {
             </div>
 
             {/* Tóm tắt */}
-            <div className="bg-gray-50 rounded-xl p-5 space-y-3 text-sm">
+            <div className="bg-teal-50 rounded-xl p-5 space-y-3 text-sm border border-teal-100">
               <p className="font-bold text-gray-800 mb-3">
                 📋 Tóm tắt đặt lịch
               </p>
@@ -672,10 +661,7 @@ export default function Booking() {
                   label: 'Người bệnh',
                   value: patients.find((p) => p.id === form.patientId)?.name,
                 },
-                {
-                  label: 'Bệnh viện',
-                  value: selectedHospital?.name,
-                },
+                { label: 'Bệnh viện', value: selectedHospital?.name },
                 { label: 'Chuyên khoa', value: form.specialty },
                 {
                   label: 'Ngày & giờ đón',
@@ -697,23 +683,23 @@ export default function Booking() {
                   </span>
                 </div>
               ))}
-              <div className="flex justify-between gap-4 pt-3 border-t">
+              <div className="flex justify-between gap-4 pt-3 border-t border-teal-200">
                 <span className="font-semibold text-gray-700">
                   Tổng thanh toán
                 </span>
-                <span className="font-bold text-teal-700 text-lg">
+                <span className="font-bold text-rose-600 text-lg">
                   {BASE_PRICE.toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
             </div>
 
             {/* Checkbox ủy quyền */}
-            <label className="flex items-start gap-3 p-4 rounded-lg border-2 border-teal-200 bg-teal-50 cursor-pointer">
+            <label className="flex items-start gap-3 p-4 rounded-lg border-2 border-rose-200 bg-rose-50 cursor-pointer hover:bg-rose-100/60 transition">
               <input
                 type="checkbox"
                 checked={form.agreed}
                 onChange={(e) => update('agreed', e.target.checked)}
-                className="mt-0.5 w-4 h-4 accent-teal-600 shrink-0"
+                className="mt-0.5 w-4 h-4 accent-rose-500 shrink-0"
               />
               <span className="text-sm text-gray-700">
                 Tôi xác nhận <b>ủy quyền cho nhân viên CareMate</b> đại diện
@@ -726,7 +712,7 @@ export default function Booking() {
             <button
               onClick={handlePay}
               disabled={!form.agreed}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-4 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-blue-200"
             >
               <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm">
                 VN
@@ -746,7 +732,7 @@ export default function Booking() {
         <button
           onClick={handleBack}
           disabled={step === 1}
-          className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
+          className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
         >
           ← Quay lại
         </button>
@@ -755,7 +741,7 @@ export default function Booking() {
           <button
             onClick={handleNext}
             disabled={!canNext()}
-            className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-rose-200"
           >
             Tiếp tục →
           </button>

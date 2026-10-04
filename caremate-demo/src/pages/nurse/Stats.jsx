@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { calcNurseRating, getNurseReviews } from '../../utils/calcNurseRating';
 
 const HOURLY_RATE = 80000; // Lương cứng demo 80k/h
-const MIN_SESSION_MINUTES = 30; // Ca tối thiểu 30 phút mới tính lương (tránh ca test 3 giây)
+const MIN_SESSION_MINUTES = 30; // Ca tối thiểu 30 phút mới tính lương
 
 export default function NurseStats() {
   const { user, bookings, reviews } = useStore();
@@ -29,7 +29,6 @@ export default function NurseStats() {
       if (b.startTime && b.endTime) {
         const minutes = (b.endTime - b.startTime) / 60000;
 
-        // 👇 Bỏ qua ca quá ngắn (< 30 phút) — coi như ca test
         if (minutes < MIN_SESSION_MINUTES) return;
 
         validSessions++;
@@ -43,7 +42,6 @@ export default function NurseStats() {
     const totalHours = totalMinutes / 60;
     const overtimeHours = overtimeMinutes / 60;
 
-    // 👇 Làm tròn tiền đến 1.000đ
     const totalSalary = Math.round((totalHours * HOURLY_RATE) / 1000) * 1000;
     const overtimeBonus = Math.round((overtimeHours * HOURLY_RATE * 1.5) / 1000) * 1000;
 
@@ -62,7 +60,6 @@ export default function NurseStats() {
   const { rating, count: reviewCount } = calcNurseRating(nurseId, reviews, 5.0);
   const myReviews = getNurseReviews(nurseId, reviews);
 
-  // Helper hiển thị giờ:phút
   const fmtDuration = (hours) => {
     const h = Math.floor(hours);
     const m = Math.round((hours % 1) * 60);
@@ -72,18 +69,34 @@ export default function NurseStats() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Đánh giá & Thu nhập</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Xem điểm đánh giá và thống kê giờ công của bạn
-        </p>
+      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
+
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
+            <span className="text-[10px] font-semibold text-white">
+              Thống kê cá nhân
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-white">
+            ⭐ Đánh giá & Thu nhập
+          </h1>
+          <p className="text-sm text-teal-50 mt-1">
+            Xem điểm đánh giá và thống kê giờ công của bạn
+          </p>
+        </div>
       </div>
 
-      {/* Rating */}
-      <div className="bg-gradient-to-br from-teal-50 to-rose-50 rounded-xl border-2 border-teal-200 p-6">
+      {/* ===== RATING — GIỮ GRADIENT THEO YÊU CẦU ===== */}
+      <div className="bg-gradient-to-br from-teal-50 to-rose-50 rounded-2xl border-2 border-teal-200 p-6 shadow-sm">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-1">Điểm đánh giá trung bình</p>
+            <p className="text-xs text-gray-500 mb-1 font-semibold">
+              Điểm đánh giá trung bình
+            </p>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold text-teal-700">
                 {rating.toFixed(1)}
@@ -103,14 +116,14 @@ export default function NurseStats() {
                   ⭐
                 </span>
               ))}
-              <span className="text-xs text-gray-500 ml-1">
-                ({reviewCount} đánh giá)
+              <span className="text-xs text-gray-500 ml-1 bg-white border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
+                {reviewCount} đánh giá
               </span>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500">Xếp hạng</p>
-            <p className="text-lg font-bold text-teal-700">
+          <div className="text-right bg-white border-2 border-rose-200 rounded-xl px-4 py-2">
+            <p className="text-xs text-rose-600 font-semibold">Xếp hạng</p>
+            <p className="text-lg font-bold text-rose-600">
               {rating >= 4.8
                 ? '🏆 Xuất sắc'
                 : rating >= 4.5
@@ -123,63 +136,77 @@ export default function NurseStats() {
         </div>
       </div>
 
-      {/* Thống kê ca làm */}
+      {/* ===== THỐNG KÊ CA LÀM — 4 ô màu ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Ca hoàn thành', value: stats.count, icon: '📋' },
+          {
+            label: 'Ca hoàn thành',
+            value: stats.count,
+            icon: '📋',
+            bg: 'bg-teal-50 border-teal-200',
+            text: 'text-teal-700',
+          },
           {
             label: 'Tổng giờ',
             value: fmtDuration(stats.totalHours),
             icon: '⏱️',
+            bg: 'bg-teal-50 border-teal-200',
+            text: 'text-teal-700',
           },
           {
             label: 'Giờ tăng ca',
             value: fmtDuration(stats.overtimeHours),
             icon: '🔥',
+            bg: 'bg-amber-50 border-amber-200',
+            text: 'text-amber-600',
           },
           {
             label: 'Tổng thu nhập',
             value: `${(stats.grandTotal / 1000).toFixed(0)}k`,
             icon: '💰',
+            bg: 'bg-rose-50 border-rose-200',
+            text: 'text-rose-600',
           },
         ].map((card) => (
           <div
             key={card.label}
-            className="bg-white rounded-xl border border-gray-200 p-4"
+            className={`rounded-2xl border-2 p-4 shadow-sm ${card.bg}`}
           >
             <p className="text-2xl mb-1">{card.icon}</p>
-            <p className="text-2xl font-bold text-gray-800">{card.value}</p>
-            <p className="text-xs text-gray-500 mt-1">{card.label}</p>
+            <p className={`text-2xl font-bold ${card.text}`}>{card.value}</p>
+            <p className="text-xs text-gray-500 mt-1 font-semibold">
+              {card.label}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Chi tiết thu nhập */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="font-bold text-gray-800 mb-4">
+      {/* ===== CHI TIẾT THU NHẬP ===== */}
+      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
+        <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
           💵 Chi tiết thu nhập (Demo)
         </h2>
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">
+          <div className="flex justify-between p-3 rounded-lg bg-teal-50 border border-teal-100">
+            <span className="text-teal-700 font-semibold">
               Lương cứng ({fmtDuration(stats.totalHours)} ×{' '}
               {HOURLY_RATE.toLocaleString('vi-VN')}đ/h)
             </span>
-            <span className="font-semibold text-gray-800">
+            <span className="font-bold text-teal-700">
               {stats.totalSalary.toLocaleString('vi-VN')}đ
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">
+          <div className="flex justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+            <span className="text-amber-700 font-semibold">
               Thưởng tăng ca ({fmtDuration(stats.overtimeHours)} × 150%)
             </span>
-            <span className="font-semibold text-orange-600">
+            <span className="font-bold text-amber-600">
               +{stats.overtimeBonus.toLocaleString('vi-VN')}đ
             </span>
           </div>
-          <div className="flex justify-between pt-3 border-t">
-            <span className="font-bold text-gray-700">Tổng cộng</span>
-            <span className="font-bold text-teal-700 text-lg">
+          <div className="flex justify-between items-center p-4 rounded-xl bg-rose-50 border-2 border-rose-200">
+            <span className="font-bold text-rose-700">Tổng cộng</span>
+            <span className="font-bold text-rose-600 text-xl">
               {stats.grandTotal.toLocaleString('vi-VN')}đ
             </span>
           </div>
@@ -192,16 +219,19 @@ export default function NurseStats() {
         </p>
       </div>
 
-      {/* Danh sách ca hoàn thành — để nurse tự kiểm tra */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="font-bold text-gray-800 mb-4">
+      {/* ===== DANH SÁCH CA HOÀN THÀNH ===== */}
+      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
+        <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
           📋 Ca làm việc đã hoàn thành ({myCompleted.length})
         </h2>
 
         {myCompleted.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-6">
-            Chưa có ca nào hoàn thành
-          </p>
+          <div className="bg-teal-50 rounded-xl p-8 text-center border-2 border-dashed border-teal-200">
+            <div className="text-4xl mb-2">📋</div>
+            <p className="text-sm text-gray-600 font-medium">
+              Chưa có ca nào hoàn thành
+            </p>
+          </div>
         ) : (
           <div className="space-y-2">
             {myCompleted.map((b) => {
@@ -216,14 +246,14 @@ export default function NurseStats() {
               return (
                 <div
                   key={b.id}
-                  className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${
+                  className={`flex items-center justify-between gap-3 p-3 rounded-lg border-2 ${
                     isTooShort
                       ? 'bg-gray-50 border-gray-200 opacity-60'
                       : 'bg-teal-50 border-teal-200'
                   }`}
                 >
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-sm font-bold text-gray-800">
                       {b.id}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -231,17 +261,17 @@ export default function NurseStats() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-mono font-bold text-gray-800">
+                    <p className="text-sm font-mono font-bold text-teal-700">
                       {fmtDuration(hours)}
                     </p>
                     {isTooShort && (
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-gray-400 font-semibold">
                         Bỏ qua (ca test)
                       </p>
                     )}
                     {isOvertime && !isTooShort && (
-                      <p className="text-[10px] text-orange-600">
-                        +{fmtDuration(hours - 4)} tăng ca
+                      <p className="text-[10px] text-amber-600 font-bold">
+                        🔥 +{fmtDuration(hours - 4)} tăng ca
                       </p>
                     )}
                   </div>
@@ -252,28 +282,31 @@ export default function NurseStats() {
         )}
       </div>
 
-      {/* Danh sách reviews */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="font-bold text-gray-800 mb-4">
+      {/* ===== DANH SÁCH REVIEWS ===== */}
+      <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
+        <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
           ⭐ Nhận xét từ khách hàng
         </h2>
 
         {myReviews.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-6">
-            Chưa có đánh giá nào
-          </p>
+          <div className="bg-teal-50 rounded-xl p-8 text-center border-2 border-dashed border-teal-200">
+            <div className="text-4xl mb-2">⭐</div>
+            <p className="text-sm text-gray-600 font-medium">
+              Chưa có đánh giá nào
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {myReviews.map((r) => (
               <div
                 key={r.id}
-                className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                className="bg-teal-50/50 rounded-xl p-4 border-2 border-teal-100"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-yellow-500 text-sm">
                     {'⭐'.repeat(r.stars)}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 font-semibold bg-white border border-teal-200 px-2 py-0.5 rounded-full">
                     {r.stars}/5 sao
                   </span>
                   {r.anonymous && (
@@ -283,14 +316,14 @@ export default function NurseStats() {
                   )}
                 </div>
                 {r.comment && (
-                  <p className="text-sm text-gray-700">{r.comment}</p>
+                  <p className="text-sm text-gray-700 mt-2">{r.comment}</p>
                 )}
                 {r.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {r.tags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full"
+                        className="text-[10px] bg-white text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full font-semibold"
                       >
                         {t}
                       </span>
