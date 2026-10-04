@@ -2,11 +2,18 @@
 import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
-import { NURSES } from '../../mock';
+import { calcNurseRating } from '../../utils/calcNurseRating';
 
 export default function NurseProfile() {
-  const { user, updateNurseProfile } = useStore();
-  const nurse = NURSES.find((n) => n.id === user?.nurseId);
+  const { user, nurses, reviews, updateNurseProfile } = useStore();
+  const nurse = nurses.find((n) => n.id === user?.nurseId);
+
+  // 👇 Rating động từ reviews
+  const { rating, count: reviewCount } = calcNurseRating(
+    nurse?.id,
+    reviews,
+    nurse?.rating || 5.0
+  );
 
   const [form, setForm] = useState({
     licenseNumber: nurse?.licenseNumber || '',
@@ -89,11 +96,17 @@ export default function NurseProfile() {
               {nurse?.exp || 0} năm
             </p>
           </div>
+          {/* 👇 Rating động */}
           <div>
             <p className="text-xs text-gray-400 mb-1">Đánh giá trung bình</p>
-            <p className="font-semibold text-gray-800">
-              ⭐ {nurse?.rating?.toFixed(1) || '—'}/5.0
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-800">
+                ⭐ {rating.toFixed(1)}/5.0
+              </p>
+              <span className="text-xs text-gray-400">
+                ({reviewCount} đánh giá)
+              </span>
+            </div>
           </div>
         </div>
       </div>

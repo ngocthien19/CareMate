@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
-import { HOSPITALS } from '../../mock';
+import { HOSPITALS as MOCK_HOSPITALS } from '../../mock';
 import ServiceTimer from '../../components/ServiceTimer';
 import Modal from '../../components/Modal';
 
@@ -38,8 +38,19 @@ const STATUS_ACTIONS = [
 export default function NurseJobDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, bookings, patients, updateBooking, addEHRRecord, ehrRecords, sendSOS } =
-    useStore();
+  const {
+    user,
+    bookings,
+    patients,
+    updateBooking,
+    addEHRRecord,
+    ehrRecords,
+    sendSOS,
+    customHospitals, // 👈 THÊM
+  } = useStore();
+
+  // 👇 Ưu tiên custom (admin đã sửa), fallback mock
+  const HOSPITALS = customHospitals || MOCK_HOSPITALS;
 
   const booking = bookings.find((b) => b.id === id);
   const patient = patients.find((p) => p.id === booking?.patientId);
@@ -71,10 +82,6 @@ export default function NurseJobDetail() {
   }
 
   const currentIdx = STATUS_ACTIONS.findIndex((s) => s.key === booking.status);
-  const nextAction =
-    currentIdx < STATUS_ACTIONS.length - 1
-      ? STATUS_ACTIONS[currentIdx + 1]
-      : null;
 
   const handleUpdateStatus = (action) => {
     if (action.needsQueue && !booking.queueNumber) {
@@ -107,7 +114,6 @@ export default function NurseJobDetail() {
   };
 
   const handleSOS = () => {
-    const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
     sendSOS({
       // Thông tin y tá
       nurseName: user?.name,
@@ -156,7 +162,7 @@ export default function NurseJobDetail() {
               Ca {booking.id}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {hospital?.name} • {booking.specialty}
+              {hospital?.name || '—'} • {booking.specialty}
             </p>
           </div>
           <button
@@ -455,19 +461,18 @@ export default function NurseJobDetail() {
         </div>
       </Modal>
 
-      {/* Modal Báo cáo */}
+      {/* Modal Báo cáo — truyền hospital vào props */}
       <ReportModal
         open={reportOpen}
         onClose={() => setReportOpen(false)}
         booking={booking}
         patient={patient}
+        hospital={hospital} // 👈 TRUYỀN VÀO
         nurseName={useStore.getState().user?.name}
         onSave={(record) => {
           addEHRRecord(booking.patientId, record);
           toast.success('Đã lưu báo cáo vào hồ sơ bệnh nhân!');
           setReportOpen(false);
-          // 👇 Chỉ điều hướng nếu lần đầu (từ nút "Đã đưa BN về nhà")
-          // Nếu mở lại từ nút "Lập báo cáo ngay" thì ở lại
           if (!hasReported) {
             navigate('/nurse/jobs');
           }
@@ -480,7 +485,15 @@ export default function NurseJobDetail() {
 // =============================================
 // REPORT MODAL (2.5)
 // =============================================
-function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
+function ReportModal({
+  open,
+  onClose,
+  booking,
+  patient,
+  hospital, // 👈 NHẬN TỪ PROPS
+  nurseName,
+  onSave,
+}) {
   const fileRef = useRef(null);
   const [form, setForm] = useState({
     doctor: '',
@@ -495,6 +508,27 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
   });
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // 👇 Hàm điền dữ liệu mẫu
+  const fillSampleData = () => {
+    setForm({
+      doctor: 'BS. Trần Minh Tuấn',
+      bp: '135/85',
+      pulse: '78',
+      weight: '65',
+      diagnosis: 'Tăng huyết áp độ 1, đái tháo đường type 2 kiểm soát tốt',
+      advice: 'Uống thuốc đều đặn, hạn chế muối, tái khám sau 1 tháng',
+      prescription:
+        'Amlodipine 5mg (1v/sáng), Metformin 500mg (1v/sáng, 1v/tối), Vitamin B12 (1v/trưa)',
+      followupDate: (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 10); // 👈 +10 ngày
+        return d.toISOString().split('T')[0];
+      })(),
+      images: form.images,
+    });
+    toast.success('Đã điền dữ liệu mẫu');
+  };
 
   const handleUpload = (e) => {
     const files = Array.from(e.target.files || []);
@@ -524,13 +558,12 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
       toast.error('Vui lòng nhập chẩn đoán');
       return;
     }
-    const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
     const record = {
       id: `EHR${Date.now()}`,
       bookingId: booking.id,
       date: new Date().toISOString().split('T')[0],
-      hospital: hospital?.name || '',
-      doctor: form.doctor.trim(),        // 👈 Dùng giá trị user nhập
+      hospital: hospital?.name || '', // 👈 Dùng hospital từ props
+      doctor: form.doctor.trim(),
       nurse: nurseName || 'Y tá',
       diagnosis: form.diagnosis,
       advice: form.advice,
@@ -554,10 +587,20 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
       maxWidth="max-w-2xl"
     >
       <div className="space-y-4">
-        <p className="text-sm text-gray-500">
-          Báo cáo sẽ được lưu tự động vào <b>Hồ sơ bệnh án</b> của{' '}
-          <b>{patient?.name}</b>
-        </p>
+        {/* Header + Nút điền mẫu */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-sm text-gray-500">
+            Báo cáo sẽ được lưu tự động vào <b>Hồ sơ bệnh án</b> của{' '}
+            <b>{patient?.name}</b>
+          </p>
+          <button
+            type="button"
+            onClick={fillSampleData}
+            className="text-xs font-semibold text-orange-600 border border-orange-300 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition whitespace-nowrap"
+          >
+            ⚡ Điền dữ liệu mẫu
+          </button>
+        </div>
 
         {/* Sinh hiệu */}
         <div>
@@ -597,6 +640,7 @@ function ReportModal({ open, onClose, booking, patient, nurseName, onSave }) {
             </div>
           </div>
         </div>
+
         {/* Bác sĩ điều trị */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">

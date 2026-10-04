@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import {
-  HOSPITALS, SPECIALTIES,
+  HOSPITALS as MOCK_HOSPITALS,
+  SPECIALTIES as MOCK_SPECIALTIES,
   TIME_SLOTS, DISTRICTS,
 } from '../../mock';
 import NurseProfileModal from '../../components/NurseProfileModal';
@@ -34,11 +35,17 @@ export default function Booking() {
     clearRebookDraft,
     nurses,
     lockedNurses,
+    customHospitals,          // 👈 THÊM
+    customSpecialties,        // 👈 THÊM
   } = useStore();
 
   const [step, setStep] = useState(1);
   const [nurseModal, setNurseModal] = useState(null);
   const [paying, setPaying] = useState(false);
+
+  // 👇 Ưu tiên dùng data từ store (nếu Admin đã sửa), fallback mock
+  const HOSPITALS = customHospitals || MOCK_HOSPITALS;
+  const SPECIALTIES = customSpecialties || MOCK_SPECIALTIES;
 
   // Form state
   const [form, setForm] = useState({
@@ -74,8 +81,9 @@ export default function Booking() {
   }, [lockedNurses]);
 
   const update = (key, value) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  setForm((f) => ({ ...f, [key]: value }));
 
+  // 👇 THÊM DÒNG NÀY
   const selectedHospital = HOSPITALS.find((h) => h.id === form.hospitalId);
   const selectedNurse = nurses.find((n) => n.id === form.nurseId);
 
@@ -496,9 +504,6 @@ export default function Booking() {
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 VD: Vượt 30 phút = +60.000đ • Vượt 1 giờ = +120.000đ
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Dưới 15 phút miễn phí • Từ 15 phút tính tròn 1 giờ
               </p>
             </div>
 
