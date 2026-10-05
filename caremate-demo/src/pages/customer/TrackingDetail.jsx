@@ -48,6 +48,8 @@ export default function TrackingDetail() {
   const nurse = NURSES.find((n) => n.id === booking.nurseId);
   const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.confirmed;
 
+  const hospitalName = booking.hospitalName || hospital?.name || '—';
+
   return (
     <div className="max-w-4xl mx-auto space-y-5">
       {/* Breadcrumb */}
@@ -75,7 +77,7 @@ export default function TrackingDetail() {
               Ca khám {booking.id}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              🏥 {hospital?.name} • 🩺 {booking.specialty}
+              🏥 {hospitalName} • 🩺 {booking.specialty}
             </p>
           </div>
           <span
@@ -172,7 +174,7 @@ export default function TrackingDetail() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           {[
             { label: 'Người bệnh', value: patient?.name, color: 'teal' },
-            { label: 'Bệnh viện', value: hospital?.name, color: 'teal' },
+            { label: 'Bệnh viện', value: hospitalName, color: 'teal' },
             { label: 'Chuyên khoa', value: booking.specialty, color: 'rose' },
             { label: 'Ngày khám', value: booking.date, color: 'rose' },
             { label: 'Giờ đón', value: booking.pickupTime, color: 'amber' },

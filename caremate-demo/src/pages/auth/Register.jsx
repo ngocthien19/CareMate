@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
+import Logo from '../../components/Logo';
 
 const MOCK_OTP = '123456';
 
@@ -143,15 +144,9 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-rose-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 animate-fadeIn">
-        <div className="text-center mb-4">
-          {/* 👇 Logo CM */}
-          <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm">
-              CM
-            </div>
-            <span className="text-2xl font-bold text-teal-600">CareMate</span>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
+        <div className="flex flex-col items-center mb-4">
+          <Logo size="lg" />
+          <p className="text-sm text-gray-500 mt-2">
             Đăng ký tài khoản Khách hàng
           </p>
         </div>

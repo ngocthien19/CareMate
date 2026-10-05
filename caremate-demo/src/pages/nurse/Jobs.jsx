@@ -131,6 +131,8 @@ function JobCard({ job, patient, hospitals, onClick }) {
   const hospital = hospitals.find((h) => h.id === job.hospitalId);
   const statusInfo = STATUS_LABEL[job.status] || STATUS_LABEL.confirmed;
 
+  const hospitalName = job.hospitalName || hospital?.name || '—';
+
   return (
     <button
       onClick={onClick}
@@ -180,7 +182,7 @@ function JobCard({ job, patient, hospitals, onClick }) {
         <div className="space-y-1.5 text-xs text-gray-600">
           <p className="truncate flex items-start gap-2">
             <span className="text-teal-500 shrink-0">🏥</span>
-            <span className="font-medium">{hospital?.name}</span>
+            <span className="font-medium">{hospitalName}</span>
           </p>
           <p className="flex items-start gap-2">
             <span className="text-rose-400 shrink-0">📅</span>

@@ -61,6 +61,8 @@ export default function ReportList() {
             const nurse = NURSES.find((n) => n.id === booking.nurseId);
             const info = calcOvertimeFee(booking.startTime, booking.endTime);
 
+            const hospitalName = booking.hospitalName || hospital?.name || '—';
+
             return (
               <button
                 key={booking.id}
@@ -91,7 +93,7 @@ export default function ReportList() {
                             {patient?.name}
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {hospital?.name} • {booking.specialty}
+                            {hospitalName} • {booking.specialty}
                           </p>
                         </div>
 

@@ -132,6 +132,8 @@ function BookingCard({ booking, patient, nurse, hospital, onClick }) {
   const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.confirmed;
   const isCompleted = booking.status === 'completed';
 
+  const hospitalName = booking.hospitalName || hospital?.name || '—';
+  
   const duration = (() => {
     if (!booking.startTime) return null;
     const end = booking.endTime || Date.now();
@@ -196,7 +198,7 @@ function BookingCard({ booking, patient, nurse, hospital, onClick }) {
         <div className="space-y-1.5 text-xs text-gray-600 mb-3">
           <p className="flex items-start gap-2">
             <span className="text-teal-500 shrink-0">🏥</span>
-            <span className="truncate font-medium">{hospital?.name}</span>
+            <span className="truncate font-medium">{hospitalName}</span>
           </p>
           <p className="flex items-start gap-2">
             <span className="text-rose-400 shrink-0">📅</span>

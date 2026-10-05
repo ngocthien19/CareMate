@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import heroImg from '../../assets/hero.jpg';
+import Logo from '../../components/Logo';
 
 export function redirectByRole(role, navigate) {
   const home = {
@@ -73,12 +74,7 @@ export default function Login() {
         />
 
         <div className="relative flex flex-col justify-between p-10 text-white w-full">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center font-bold text-sm">
-              CM
-            </div>
-            <span className="text-xl font-bold">CareMate</span>
-          </div>
+          <Logo variant="white" size="lg" />
 
           <div className="max-w-md space-y-4">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5">
@@ -115,17 +111,17 @@ export default function Login() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 animate-fadeIn">
             {/* Logo mobile */}
-            <div className="md:hidden text-center mb-6">
-              <h1 className="text-3xl font-bold text-teal-600">CareMate</h1>
-              <p className="text-sm text-gray-500 mt-1">
+            <div className="md:hidden flex flex-col items-center mb-6">
+              <Logo size="lg" />
+              <p className="text-sm text-gray-500 mt-2 text-center">
                 Chăm sóc cha mẹ tại bệnh viện chu đáo như người thân
               </p>
             </div>
 
             {/* Logo desktop */}
-            <div className="hidden md:block text-center mb-6">
-              <h1 className="text-3xl font-bold text-teal-600">CareMate</h1>
-              <p className="text-sm text-gray-500 mt-1">
+            <div className="hidden md:flex flex-col items-center mb-6">
+              <Logo size="lg" />
+              <p className="text-sm text-gray-500 mt-2">
                 Đăng nhập để tiếp tục
               </p>
             </div>

@@ -268,6 +268,8 @@ export default function AdminFinance() {
                         STATUS_LABEL[b.status] || STATUS_LABEL.confirmed;
                       const hasOvertime = b.overtimePaymentStatus === 'paid';
 
+                      const hospitalName = b.hospitalName || hospital?.name || '—';
+
                       return (
                         <tr key={b.id} className="hover:bg-teal-50/30 transition">
                           <td className="px-3 md:px-4 py-3 font-mono text-xs text-teal-700 font-bold whitespace-nowrap">
@@ -309,7 +311,7 @@ export default function AdminFinance() {
                             </div>
                           </td>
                           <td className="px-3 md:px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
-                            {hospital?.name}
+                            {hospitalName}
                           </td>
                           <td className="px-3 md:px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
                             {b.createdAt

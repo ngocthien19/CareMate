@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useReveal } from '../hooks/useReveal';   // 👈 THÊM
 import heroImg from '../assets/hero.jpg';
+import Logo from '../components/Logo';
 
 export default function Landing() {
   const { isAuthenticated, user } = useStore();
@@ -27,12 +28,7 @@ export default function Landing() {
       {/* ===== HEADER ===== */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100 animate-fadeInUp">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-teal-200">
-              CM
-            </div>
-            <span className="text-xl font-bold text-teal-600">CareMate</span>
-          </div>
+          <Logo size="md" />
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -285,11 +281,8 @@ export default function Landing() {
       {/* ===== FOOTER ===== */}
       <footer className="bg-teal-700 text-white py-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-xs">
-              CM
-            </div>
-            <span className="text-lg font-bold">CareMate</span>
+          <div className="flex items-center justify-center mb-3">
+            <Logo variant="white" size="md" />
           </div>
           <p className="text-xs opacity-80">
             Dịch vụ đồng hành y tế tại TP. Hồ Chí Minh

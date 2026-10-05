@@ -285,6 +285,8 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
   const overtimeMinutes = Math.max(0, Math.floor(elapsed * 60 - 4 * 60));
   const fee = overtimeMinutes * 2000;
 
+  const hospitalName = booking.hospitalName || hospital?.name || '—';
+
   const STATUS_MAP = {
     confirmed: { label: 'Chờ bắt đầu', color: 'bg-blue-100 text-blue-700 border-blue-200' },
     picking_up: { label: 'Đang đón BN', color: 'bg-teal-100 text-teal-700 border-teal-200' },
@@ -319,7 +321,7 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
             </span>
           </p>
           <p className="text-xs text-gray-500 truncate">
-            🏥 {hospital?.name} • 👩‍⚕️ {nurse?.name}
+            🏥 {hospitalName} • 👩‍⚕️ {nurse?.name}
           </p>
         </div>
       </div>

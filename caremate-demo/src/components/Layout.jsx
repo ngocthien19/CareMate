@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import Logo from './Logo';
 
 const MENUS = {
   customer: [
@@ -59,13 +60,8 @@ export default function Layout({ children }) {
         onClick={() => handleNavigate('/')}
         className="p-4 border-b text-left hover:bg-gray-50 transition w-full"
       >
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-teal-200">
-            CM
-          </div>
-          <span className="text-xl font-bold text-teal-600">CareMate</span>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">{ROLE_LABEL[user.role]}</p>
+        <Logo size="md" />
+        <p className="text-xs text-gray-500 mt-1.5">{ROLE_LABEL[user.role]}</p>
       </button>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">

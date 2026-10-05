@@ -49,6 +49,7 @@ export default function Booking() {
   const [form, setForm] = useState({
     patientId: patients[0]?.id || null,
     hospitalId: null,
+    customHospitalName: '',      // 👈 Bệnh viện tự nhập
     specialty: null,
     date: '',
     time: '',
@@ -78,7 +79,16 @@ export default function Booking() {
 
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  const selectedHospital = HOSPITALS.find((h) => h.id === form.hospitalId);
+  // 👇 Hỗ trợ bệnh viện custom
+  const selectedHospital =
+    form.hospitalId === 'other'
+      ? {
+          id: 'other',
+          name: form.customHospitalName || 'Bệnh viện khác',
+          address: 'Địa chỉ do khách hàng cung cấp',
+        }
+      : HOSPITALS.find((h) => h.id === form.hospitalId);
+
   const selectedNurse = nurses.find((n) => n.id === form.nurseId);
 
   const availableNurses = useMemo(
@@ -93,7 +103,14 @@ export default function Booking() {
   }, []);
 
   const canNext = () => {
-    if (step === 1) return form.hospitalId && form.specialty;
+    if (step === 1) {
+      // Nếu chọn "Khác" → cần tên BV có nội dung
+      const hasHospital =
+        form.hospitalId === 'other'
+          ? form.customHospitalName.trim().length > 0
+          : form.hospitalId;
+      return hasHospital && form.specialty;
+    }
     if (step === 2) {
       if (!form.date || !form.time) return false;
       if (form.pickupType === 'home')
@@ -133,6 +150,11 @@ export default function Booking() {
       patientName: patient?.name,
       nurseId: form.nurseId,
       hospitalId: form.hospitalId,
+      // 👇 Lưu tên BV custom nếu chọn "Khác"
+      hospitalName:
+        form.hospitalId === 'other'
+          ? form.customHospitalName.trim()
+          : selectedHospital?.name,
       specialty: form.specialty,
       date: form.date,
       pickupTime: form.time,
@@ -170,7 +192,6 @@ export default function Booking() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Header */}
       {/* Header — nền TEAL đơn sắc */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg mb-6">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
@@ -322,7 +343,48 @@ export default function Booking() {
                     </p>
                   </button>
                 ))}
+
+                {/* 👇 Nút "Khác" — bệnh viện tự nhập */}
+                <button
+                  onClick={() => update('hospitalId', 'other')}
+                  className={`p-3 rounded-lg border-2 border-dashed text-left transition ${
+                    form.hospitalId === 'other'
+                      ? 'border-rose-400 bg-rose-50'
+                      : 'border-teal-300 hover:border-rose-300 hover:bg-rose-50/40'
+                  }`}
+                >
+                  <p className="font-semibold text-sm text-teal-700 flex items-center gap-2">
+                    ➕ Khác (Nhập tên bệnh viện)
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Bệnh viện/phòng khám khác tại TP.HCM
+                  </p>
+                </button>
               </div>
+
+              {/* 👇 Input nhập tên BV khi chọn "Khác" */}
+              {form.hospitalId === 'other' && (
+                <div className="mt-3 p-4 rounded-xl bg-teal-50 border-2 border-teal-200 animate-fadeIn">
+                  <label className="block text-sm font-bold text-teal-700 mb-2">
+                    Tên bệnh viện / phòng khám *
+                  </label>
+                  <input
+                    type="text"
+                    value={form.customHospitalName}
+                    onChange={(e) => update('customHospitalName', e.target.value)}
+                    placeholder="VD: BV Quân Y 175, BV Nhi Đồng 2, PK Đa khoa Hồng Đức..."
+                    autoFocus
+                    className="w-full px-4 py-3 bg-white border-2 border-teal-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                  />
+                  <p className="text-xs text-teal-600 mt-2 flex items-start gap-1">
+                    <span>💡</span>
+                    <span>
+                      Vui lòng nhập tên bệnh viện có địa chỉ tại TP.HCM. Y tá sẽ
+                      liên hệ xác nhận địa chỉ chính xác trước giờ đón.
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Chuyên khoa */}
@@ -661,7 +723,13 @@ export default function Booking() {
                   label: 'Người bệnh',
                   value: patients.find((p) => p.id === form.patientId)?.name,
                 },
-                { label: 'Bệnh viện', value: selectedHospital?.name },
+                {
+                  label: 'Bệnh viện',
+                  value:
+                    form.hospitalId === 'other'
+                      ? form.customHospitalName
+                      : selectedHospital?.name,
+                },
                 { label: 'Chuyên khoa', value: form.specialty },
                 {
                   label: 'Ngày & giờ đón',

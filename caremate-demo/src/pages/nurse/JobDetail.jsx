@@ -55,6 +55,8 @@ export default function NurseJobDetail() {
   const patient = patients.find((p) => p.id === booking?.patientId);
   const hospital = HOSPITALS.find((h) => h.id === booking?.hospitalId);
 
+  const hospitalName = booking?.hospitalName || hospital?.name || '—';
+
   const patientEHR = booking ? ehrRecords[booking.patientId] || [] : [];
 
   const hasReported = patientEHR.some((e) => e.bookingId === booking?.id);
@@ -117,7 +119,7 @@ export default function NurseJobDetail() {
       nurseAvatar: user?.avatar,
       bookingId: booking.id,
       status: booking.status,
-      hospitalName: hospital?.name,
+      hospitalName: hospitalName,
       hospitalAddress: hospital?.address,
       pickupAddress:
         booking.pickupType === 'home'
@@ -165,7 +167,7 @@ export default function NurseJobDetail() {
               Ca {booking.id}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              🏥 {hospital?.name || '—'} • 🩺 {booking.specialty}
+              🏥 {hospitalName || '—'} • 🩺 {booking.specialty}
             </p>
           </div>
 
@@ -471,6 +473,7 @@ export default function NurseJobDetail() {
         booking={booking}
         patient={patient}
         hospital={hospital}
+        hospitalName={hospitalName}
         nurseName={useStore.getState().user?.name}
         onSave={(record) => {
           addEHRRecord(booking.patientId, record);
@@ -494,6 +497,7 @@ function ReportModal({
   booking,
   patient,
   hospital,
+  hospitalName,
   nurseName,
   onSave,
 }) {
@@ -564,7 +568,7 @@ function ReportModal({
       id: `EHR${Date.now()}`,
       bookingId: booking.id,
       date: new Date().toISOString().split('T')[0],
-      hospital: hospital?.name || '',
+      hospital: hospitalName || hospital?.name || '',
       doctor: form.doctor.trim(),
       nurse: nurseName || 'Y tá',
       diagnosis: form.diagnosis,

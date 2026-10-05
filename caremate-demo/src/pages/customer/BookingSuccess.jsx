@@ -28,6 +28,8 @@ export default function BookingSuccess() {
   const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
   const nurse = NURSES.find((n) => n.id === booking.nurseId);
 
+  const hospitalName = booking.hospitalName || hospital?.name || '—';
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Success card */}
@@ -77,7 +79,7 @@ export default function BookingSuccess() {
         <div className="space-y-3 py-4 text-sm">
           {[
             { label: 'Người bệnh', value: patient?.name },
-            { label: 'Bệnh viện', value: hospital?.name },
+            { label: 'Bệnh viện', value: hospitalName },
             { label: 'Chuyên khoa', value: booking.specialty },
             { label: 'Ngày khám', value: booking.date },
             { label: 'Giờ đón', value: booking.pickupTime },

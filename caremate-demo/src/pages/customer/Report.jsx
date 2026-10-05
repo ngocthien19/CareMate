@@ -46,6 +46,8 @@ export default function Report() {
   const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
   const nurse = NURSES.find((n) => n.id === booking.nurseId);
 
+  const hospitalName = booking.hospitalName || hospital?.name || '—';
+
   const ehrList = ehrRecords[booking.patientId] || [];
   const ehr = ehrList.find((e) => e.bookingId === booking.id);
 
@@ -124,7 +126,7 @@ export default function Report() {
                   {patient?.name}
                 </h1>
                 <p className="text-xs text-teal-50">
-                  🏥 {hospital?.name} • 🩺 {booking.specialty}
+                  🏥 {hospitalName} • 🩺 {booking.specialty}
                 </p>
               </div>
             </div>
