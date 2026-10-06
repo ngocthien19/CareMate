@@ -29,7 +29,28 @@ export default function Patients() {
   const handleExportPDF = (p, e) => {
     e.stopPropagation();
     try {
-      exportPatientPDF(p, ehrRecords[p.id] || []);
+      exportPatientPDF(
+        p,
+        ehrRecords[p.id] || [],
+        t,
+        {
+          relationLabel: t(`patients.relations.${p.relation}`, {
+            defaultValue: p.relation,
+          }),
+          genderLabel:
+            p.gender === 'male'
+              ? t('patients.formGenderMale')
+              : p.gender === 'female'
+              ? t('patients.formGenderFemale')
+              : p.gender,
+          allergyLabels: (p.allergies || []).map((a) =>
+            t(`patients.allergies.${a}`, { defaultValue: a })
+          ),
+          conditionLabels: (p.conditions || []).map((c) =>
+            t(`patients.conditions.${c}`, { defaultValue: c })
+          ),
+        }
+      );
       toast.success(t('patients.exportPdfSuccess'));
     } catch (err) {
       console.error(err);

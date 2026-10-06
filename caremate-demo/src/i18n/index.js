@@ -14,13 +14,14 @@ i18n
       vi: { translation: vi },
       en: { translation: en },
     },
-    fallbackLng: 'vi',
+    fallbackLng: 'en',                         
     supportedLngs: ['vi', 'en'],
+    lng: 'en',                                 
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],                  
       lookupLocalStorage: 'caremate-lang',
       caches: ['localStorage'],
     },

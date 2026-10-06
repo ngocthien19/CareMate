@@ -46,7 +46,16 @@ export default function PatientDetail() {
 
   const handleExportPDF = () => {
     try {
-      exportPatientPDF(patient, ehrList);
+      exportPatientPDF(patient, ehrList, t, {
+        relationLabel,
+        genderLabel,
+        allergyLabels: (patient.allergies || []).map((a) =>
+          t(`patients.allergies.${a}`, { defaultValue: a })
+        ),
+        conditionLabels: (patient.conditions || []).map((c) =>
+          t(`patients.conditions.${c}`, { defaultValue: c })
+        ),
+      });
       toast.success(t('patients.exportPdfSuccess'));
     } catch (err) {
       console.error(err);
