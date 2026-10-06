@@ -79,7 +79,7 @@ export default function NurseJobDetail() {
       patch.endTime = Date.now();
     }
     updateBooking(booking.id, patch);
-    toast.success(`✅ ${t(`nurseJobDetail.actions.${action.key}`)}`);
+    toast.success(`${t(`nurseJobDetail.actions.${action.key}`)}`);
 
     if (action.openReport && !hasReported) {
       setTimeout(() => setReportOpen(true), 300);
@@ -117,7 +117,7 @@ export default function NurseJobDetail() {
       patientBhkyt: patient?.bhyt,
       bookingStartTime: booking.startTime,
     });
-    toast.error(`🚨 ${t('nurseJobDetail.sosSent')}`, {
+    toast.error(`${t('nurseJobDetail.sosSent')}`, {
       duration: 3000,
     });
     setSosOpen(false);
