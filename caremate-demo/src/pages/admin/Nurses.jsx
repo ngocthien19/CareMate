@@ -1,17 +1,16 @@
 // src/pages/admin/Nurses.jsx
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import Modal from '../../components/Modal';
 import { calcNurseRating } from '../../utils/calcNurseRating';
 
-const LEGAL_DOC_LABELS = {
-  cccd: 'CCCD/CMND',
-  degree: 'Bằng cử nhân',
-  license: 'Chứng chỉ hành nghề (Sở Y tế TP.HCM)',
-};
+// Chỉ giữ key — label dịch runtime
+const LEGAL_DOC_KEYS = ['cccd', 'degree', 'license'];
 
 export default function AdminNurses() {
+  const { t } = useTranslation();
   const {
     nurses,
     reviews,
@@ -33,7 +32,7 @@ export default function AdminNurses() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-5 md:p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -43,36 +42,37 @@ export default function AdminNurses() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Quản trị nhân sự
+                {t('adminNurses.headerBadge')}
               </span>
             </div>
             <h1 className="text-xl md:text-2xl font-bold text-white">
-              👥 Quản lý Y tá
+              👥 {t('adminNurses.headerTitle')}
             </h1>
             <p className="text-xs md:text-sm text-teal-50 mt-1">
-              Xác thực hồ sơ pháp lý, khóa/mở tài khoản nhân sự
+              {t('adminNurses.headerSubtitle')}
             </p>
           </div>
           <button
             onClick={() => setAddOpen(true)}
             className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 md:px-5 py-2.5 rounded-xl transition shadow-lg shadow-rose-900/20 hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
-            <span className="text-lg leading-none">+</span> Thêm Y tá mới
+            <span className="text-lg leading-none">+</span>{' '}
+            {t('adminNurses.addBtn')}
           </button>
         </div>
       </div>
 
-      {/* ===== STATS — 3 ô màu ===== */}
+      {/* ===== STATS ===== */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-gray-50 rounded-2xl border-2 border-gray-200 p-4 shadow-sm">
           <p className="text-xs text-gray-600 font-semibold mb-1">
-            📋 Tổng Y tá
+            📋 {t('adminNurses.statTotal')}
           </p>
           <p className="text-2xl font-bold text-gray-700">{nurses.length}</p>
         </div>
         <div className="bg-teal-50 rounded-2xl border-2 border-teal-200 p-4 shadow-sm">
           <p className="text-xs text-teal-700 font-semibold mb-1">
-            ✅ Đang hoạt động
+            ✅ {t('adminNurses.statActive')}
           </p>
           <p className="text-2xl font-bold text-teal-700">
             {nurses.length - lockedNurses.length}
@@ -80,7 +80,7 @@ export default function AdminNurses() {
         </div>
         <div className="bg-rose-50 rounded-2xl border-2 border-rose-200 p-4 shadow-sm">
           <p className="text-xs text-rose-700 font-semibold mb-1">
-            🔒 Đã khóa
+            🔒 {t('adminNurses.statLocked')}
           </p>
           <p className="text-2xl font-bold text-rose-600">
             {lockedNurses.length}
@@ -88,27 +88,26 @@ export default function AdminNurses() {
         </div>
       </div>
 
-      {/* ===== BẢNG — có scroll ngang trên mobile ===== */}
+      {/* ===== BẢNG ===== */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
-        {/* Scroll wrapper */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[800px]">
             <thead className="bg-teal-50 border-b-2 border-teal-100">
               <tr>
                 <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                  Y tá
+                  {t('adminNurses.tableNurse')}
                 </th>
                 <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                  Chứng chỉ
+                  {t('adminNurses.tableCerts')}
                 </th>
                 <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                  Đánh giá
+                  {t('adminNurses.tableRating')}
                 </th>
                 <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                  Trạng thái
+                  {t('adminNurses.tableStatus')}
                 </th>
                 <th className="text-right px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                  Thao tác
+                  {t('adminNurses.tableActions')}
                 </th>
               </tr>
             </thead>
@@ -139,7 +138,8 @@ export default function AdminNurses() {
                             {n.name}
                           </p>
                           <p className="text-xs text-gray-500 whitespace-nowrap">
-                            ID #{n.id} • {n.exp} năm KN
+                            {t('adminNurses.idLabel')} #{n.id} • {n.exp}{' '}
+                            {t('adminNurses.yearsExpShort')}
                           </p>
                         </div>
                       </div>
@@ -147,12 +147,14 @@ export default function AdminNurses() {
                     <td className="px-3 md:px-4 py-3">
                       <div className="text-xs text-gray-600 whitespace-nowrap">
                         <p>
-                          CCHN:{' '}
+                          {t('adminNurses.licensePrefix')}{' '}
                           <b className="text-teal-700">
                             {n.licenseNumber || '—'}
                           </b>
                         </p>
-                        <p>CPR: {n.cprCert || '—'}</p>
+                        <p>
+                          {t('adminNurses.cprPrefix')} {n.cprCert || '—'}
+                        </p>
                       </div>
                     </td>
                     <td className="px-3 md:px-4 py-3">
@@ -160,17 +162,17 @@ export default function AdminNurses() {
                         ⭐ {rating.toFixed(1)}
                       </p>
                       <p className="text-xs text-gray-500 whitespace-nowrap">
-                        {count} đánh giá
+                        {t('adminNurses.reviewsCount', { count })}
                       </p>
                     </td>
                     <td className="px-3 md:px-4 py-3">
                       {locked ? (
                         <span className="text-xs bg-rose-100 text-rose-700 border-2 border-rose-200 px-2 py-1 rounded-full font-bold whitespace-nowrap inline-block">
-                          🔒 Đã khóa
+                          🔒 {t('adminNurses.statusLocked')}
                         </span>
                       ) : (
                         <span className="text-xs bg-teal-100 text-teal-700 border-2 border-teal-200 px-2 py-1 rounded-full font-bold whitespace-nowrap inline-block">
-                          ✓ Hoạt động
+                          ✓ {t('adminNurses.statusActive')}
                         </span>
                       )}
                     </td>
@@ -180,15 +182,17 @@ export default function AdminNurses() {
                           onClick={() => handleView(n)}
                           className="text-xs font-bold text-teal-700 border-2 border-teal-300 hover:bg-teal-500 hover:text-white hover:border-teal-500 px-2 md:px-3 py-1.5 rounded-lg transition"
                         >
-                          👁 Xem
+                          👁 {t('adminNurses.viewBtn')}
                         </button>
                         <button
                           onClick={() => {
                             toggleNurseLock(n.id);
                             toast.success(
                               locked
-                                ? `Đã mở khóa ${n.name}`
-                                : `Đã khóa ${n.name}`
+                                ? t('adminNurses.unlockSuccess', {
+                                    name: n.name,
+                                  })
+                                : t('adminNurses.lockSuccess', { name: n.name })
                             );
                           }}
                           className={`text-xs font-bold px-2 md:px-3 py-1.5 rounded-lg transition border-2 whitespace-nowrap ${
@@ -197,13 +201,15 @@ export default function AdminNurses() {
                               : 'text-rose-600 border-rose-300 hover:bg-rose-500 hover:text-white hover:border-rose-500'
                           }`}
                         >
-                          {locked ? '🔓 Mở' : '🔒 Khóa'}
+                          {locked
+                            ? `🔓 ${t('adminNurses.unlockBtn')}`
+                            : `🔒 ${t('adminNurses.lockBtn')}`}
                         </button>
                         <button
                           onClick={() => setConfirmDelete(n)}
                           className="text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 px-2 md:px-3 py-1.5 rounded-lg transition shadow-md shadow-rose-200 whitespace-nowrap"
                         >
-                          🗑 Xóa
+                          🗑 {t('adminNurses.deleteBtn')}
                         </button>
                       </div>
                     </td>
@@ -214,10 +220,9 @@ export default function AdminNurses() {
           </table>
         </div>
 
-        {/* Hint scroll trên mobile */}
         <div className="sm:hidden bg-teal-50 border-t-2 border-teal-100 px-4 py-2 text-center">
           <p className="text-[10px] text-teal-600 font-semibold">
-            ← Vuốt ngang để xem thêm →
+            {t('adminNurses.scrollHint')}
           </p>
         </div>
       </div>
@@ -226,7 +231,7 @@ export default function AdminNurses() {
       <Modal
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
-        title="Hồ sơ pháp lý của Y tá"
+        title={t('adminNurses.detailModalTitle')}
         maxWidth="max-w-2xl"
       >
         {editing && (
@@ -238,7 +243,7 @@ export default function AdminNurses() {
                 ...prev,
                 legalDocs: { ...prev.legalDocs, ...docs },
               }));
-              toast.success('Đã cập nhật ảnh pháp lý');
+              toast.success(t('adminNurses.watermarkUpdate'));
             }}
           />
         )}
@@ -248,13 +253,13 @@ export default function AdminNurses() {
       <Modal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        title="Thêm Y tá mới"
+        title={t('adminNurses.addModalTitle')}
         maxWidth="max-w-2xl"
       >
         <AddNurseForm
           onSave={(newNurse) => {
             addNurse(newNurse);
-            toast.success('Đã thêm Y tá mới');
+            toast.success(t('adminNurses.addSuccess'));
             setAddOpen(false);
           }}
           onCancel={() => setAddOpen(false)}
@@ -266,7 +271,7 @@ export default function AdminNurses() {
       <Modal
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        title="Xác nhận xóa Y tá"
+        title={t('adminNurses.deleteModalTitle')}
         maxWidth="max-w-sm"
       >
         {confirmDelete && (
@@ -275,30 +280,31 @@ export default function AdminNurses() {
               ⚠️
             </div>
             <p className="text-sm text-gray-700">
-              Bạn chắc chắn muốn xóa{' '}
-              <b className="text-rose-600">{confirmDelete.name}</b> khỏi hệ
-              thống?
+              {t('adminNurses.deleteConfirm', { name: confirmDelete.name })}
             </p>
             <p className="text-xs text-gray-500">
-              Tài khoản đăng nhập của y tá này cũng sẽ bị xóa. Hành động không
-              thể hoàn tác.
+              {t('adminNurses.deleteWarning')}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmDelete(null)}
                 className="flex-1 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition"
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => {
                   deleteNurse(confirmDelete.id);
-                  toast.success(`Đã xóa ${confirmDelete.name}`);
+                  toast.success(
+                    t('adminNurses.deleteSuccess', {
+                      name: confirmDelete.name,
+                    })
+                  );
                   setConfirmDelete(null);
                 }}
                 className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition shadow-md shadow-red-300"
               >
-                Xóa vĩnh viễn
+                {t('adminNurses.deleteForeverBtn')}
               </button>
             </div>
           </div>
@@ -310,6 +316,7 @@ export default function AdminNurses() {
 
 // ===== Chi tiết pháp lý =====
 function NurseLegalDetail({ nurse, onUpdate }) {
+  const { t } = useTranslation();
   const [lightbox, setLightbox] = useState(null);
   const [editingKey, setEditingKey] = useState(null);
   const fileRef = useRef(null);
@@ -319,7 +326,7 @@ function NurseLegalDetail({ nurse, onUpdate }) {
   const handleUpload = (key, file) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Ảnh tối đa 2MB');
+      toast.error(t('adminNurses.uploadError'));
       return;
     }
     const reader = new FileReader();
@@ -352,10 +359,11 @@ function NurseLegalDetail({ nurse, onUpdate }) {
             {nurse.name}
           </p>
           <p className="text-xs md:text-sm text-gray-500">
-            {nurse.age} tuổi • {nurse.exp} năm kinh nghiệm
+            {nurse.age} {t('adminNurses.yearsOldSuffix')} • {nurse.exp}{' '}
+            {t('adminNurses.yearsExpSuffix')}
           </p>
           <p className="text-xs text-gray-500 mt-1 truncate">
-            CCHN:{' '}
+            {t('adminNurses.licensePrefix')}{' '}
             <b className="text-teal-700">{nurse.licenseNumber || '—'}</b>
           </p>
         </div>
@@ -365,10 +373,10 @@ function NurseLegalDetail({ nurse, onUpdate }) {
       <div>
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
-            📋 Hồ sơ pháp lý
+            📋 {t('adminNurses.legalDocsTitle')}
           </p>
           <p className="text-[10px] text-teal-600 italic font-semibold">
-            Bấm ảnh để thay đổi
+            {t('adminNurses.legalDocsHint')}
           </p>
         </div>
 
@@ -384,7 +392,8 @@ function NurseLegalDetail({ nurse, onUpdate }) {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries(LEGAL_DOC_LABELS).map(([key, label]) => {
+          {LEGAL_DOC_KEYS.map((key) => {
+            const label = t(`adminNurses.legalDocLabels.${key}`);
             const url = docs[key];
             return (
               <div key={key} className="space-y-2">
@@ -409,13 +418,13 @@ function NurseLegalDetail({ nurse, onUpdate }) {
                           onClick={() => triggerUpload(key)}
                           className="bg-white text-teal-700 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-teal-50 shadow-md"
                         >
-                          🔄 Đổi
+                          🔄 {t('adminNurses.changeBtn')}
                         </button>
                         <button
                           onClick={() => handleRemove(key)}
                           className="bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-rose-600 shadow-md"
                         >
-                          🗑 Xóa
+                          🗑 {t('adminNurses.deletePhotoBtn')}
                         </button>
                       </div>
                     </>
@@ -426,7 +435,7 @@ function NurseLegalDetail({ nurse, onUpdate }) {
                     >
                       <span className="text-3xl mb-1">📷</span>
                       <span className="text-xs text-gray-500 group-hover:text-white font-semibold">
-                        Upload ảnh
+                        {t('adminNurses.uploadPhoto')}
                       </span>
                     </button>
                   )}
@@ -441,9 +450,7 @@ function NurseLegalDetail({ nurse, onUpdate }) {
 
         <p className="text-[10px] text-gray-400 mt-3 italic flex items-start gap-1">
           <span>💡</span>
-          <span>
-            Watermark được tự động đóng khi public lên web cho khách xem
-          </span>
+          <span>{t('adminNurses.watermarkNote')}</span>
         </p>
       </div>
 
@@ -477,6 +484,7 @@ function NurseLegalDetail({ nurse, onUpdate }) {
 
 // ===== Form thêm y tá =====
 function AddNurseForm({ onSave, onCancel, existingIds }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -497,7 +505,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Ảnh tối đa 2MB');
+      toast.error(t('adminNurses.uploadError'));
       e.target.value = '';
       return;
     }
@@ -516,8 +524,10 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
   };
 
   const handleSubmit = () => {
-    if (!form.name.trim()) return toast.error('Nhập họ tên');
-    if (!/^0\d{9}$/.test(form.phone)) return toast.error('SĐT không hợp lệ');
+    if (!form.name.trim())
+      return toast.error(t('adminNurses.addForm.nameRequired'));
+    if (!/^0\d{9}$/.test(form.phone))
+      return toast.error(t('adminNurses.addForm.phoneInvalid'));
 
     const newId = Math.max(...existingIds, 0) + 1;
     onSave({
@@ -541,25 +551,25 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
   return (
     <div className="space-y-4">
       <div className="bg-teal-50 border-2 border-teal-200 rounded-lg p-3 text-xs text-teal-700">
-        💡 Tài khoản đăng nhập mặc định: SĐT + mật khẩu <b>123456</b>
+        💡 {t('adminNurses.addForm.accountHint')}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
-            Họ và tên *
+            {t('adminNurses.addForm.nameLabel')} *
           </label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
-            placeholder="Nguyễn Văn X"
+            placeholder={t('adminNurses.addForm.namePlaceholder')}
             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
           />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
-            SĐT đăng nhập *
+            {t('adminNurses.addForm.phoneLabel')} *
           </label>
           <input
             type="tel"
@@ -567,7 +577,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
             onChange={(e) =>
               update('phone', e.target.value.replace(/\D/g, '').slice(0, 10))
             }
-            placeholder="0901234567"
+            placeholder={t('adminNurses.addForm.phonePlaceholder')}
             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
           />
         </div>
@@ -576,7 +586,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
-            Tuổi
+            {t('adminNurses.addForm.ageLabel')}
           </label>
           <input
             type="text"
@@ -584,13 +594,13 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
             onChange={(e) =>
               update('age', e.target.value.replace(/\D/g, '').slice(0, 2))
             }
-            placeholder="28"
+            placeholder={t('adminNurses.addForm.agePlaceholder')}
             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
           />
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-1">
-            Số năm kinh nghiệm
+            {t('adminNurses.addForm.expLabel')}
           </label>
           <input
             type="text"
@@ -598,7 +608,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
             onChange={(e) =>
               update('exp', e.target.value.replace(/\D/g, '').slice(0, 2))
             }
-            placeholder="5"
+            placeholder={t('adminNurses.addForm.expPlaceholder')}
             className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
           />
         </div>
@@ -606,13 +616,13 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
 
       <div className="p-3 rounded-xl bg-teal-50 border border-teal-100">
         <label className="block text-sm font-bold text-teal-700 mb-1">
-          Số hiệu CCHN
+          {t('adminNurses.addForm.licenseLabel')}
         </label>
         <input
           type="text"
           value={form.licenseNumber}
           onChange={(e) => update('licenseNumber', e.target.value)}
-          placeholder="CCHN-2024-XXXXX"
+          placeholder={t('adminNurses.addForm.licensePlaceholder')}
           className="w-full px-3 py-2 bg-white border-2 border-teal-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
         />
       </div>
@@ -620,25 +630,25 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="p-3 rounded-xl bg-rose-50 border border-rose-100">
           <label className="block text-sm font-bold text-rose-700 mb-1">
-            Chứng chỉ CPR
+            {t('adminNurses.addForm.cprLabel')}
           </label>
           <input
             type="text"
             value={form.cprCert}
             onChange={(e) => update('cprCert', e.target.value)}
-            placeholder="CPR-2024-XXX"
+            placeholder={t('adminNurses.addForm.cprPlaceholder')}
             className="w-full px-3 py-2 bg-white border-2 border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
           />
         </div>
         <div className="p-3 rounded-xl bg-amber-50 border border-amber-100">
           <label className="block text-sm font-bold text-amber-700 mb-1">
-            Chứng chỉ BLS
+            {t('adminNurses.addForm.blsLabel')}
           </label>
           <input
             type="text"
             value={form.blsCert}
             onChange={(e) => update('blsCert', e.target.value)}
-            placeholder="BLS-2024-XXX"
+            placeholder={t('adminNurses.addForm.blsPlaceholder')}
             className="w-full px-3 py-2 bg-white border-2 border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
           />
         </div>
@@ -647,7 +657,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
       {/* Upload ảnh pháp lý */}
       <div>
         <p className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-          📷 Hồ sơ pháp lý (khuyến nghị upload)
+          📷 {t('adminNurses.addForm.legalDocsTitle')}
         </p>
 
         <input
@@ -659,7 +669,8 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
         />
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {Object.entries(LEGAL_DOC_LABELS).map(([key, label]) => {
+          {LEGAL_DOC_KEYS.map((key) => {
+            const label = t(`adminNurses.legalDocLabels.${key}`);
             const url = docs[key];
             return (
               <div key={key} className="relative">
@@ -676,7 +687,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
                         onClick={() => setDocs((d) => ({ ...d, [key]: '' }))}
                         className="bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md"
                       >
-                        🗑 Xóa
+                        🗑 {t('adminNurses.deletePhotoBtn')}
                       </button>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-teal-700 text-white text-[9px] px-1 py-0.5 truncate font-semibold">
@@ -700,7 +711,7 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
           })}
         </div>
         <p className="text-[10px] text-gray-400 mt-2 italic">
-          * Có thể upload sau từ nút "👁 Xem" trên bảng
+          * {t('adminNurses.addForm.legalDocsHint')}
         </p>
       </div>
 
@@ -709,13 +720,13 @@ function AddNurseForm({ onSave, onCancel, existingIds }) {
           onClick={onCancel}
           className="flex-1 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition"
         >
-          Hủy
+          {t('common.cancel')}
         </button>
         <button
           onClick={handleSubmit}
           className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-lg transition shadow-md shadow-rose-200"
         >
-          Tạo tài khoản
+          {t('adminNurses.addForm.createBtn')}
         </button>
       </div>
     </div>

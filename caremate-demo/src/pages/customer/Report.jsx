@@ -1,6 +1,7 @@
 // src/pages/customer/Report.jsx
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS, NURSES } from '../../mock';
@@ -13,6 +14,7 @@ import { calcNurseRating } from '../../utils/calcNurseRating';
 export default function Report() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     bookings,
     patients,
@@ -31,12 +33,12 @@ export default function Report() {
   if (!booking) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Không tìm thấy ca khám</p>
+        <p className="text-gray-500">{t('report.notFound')}</p>
         <button
           onClick={() => navigate('/customer/report')}
           className="text-teal-600 font-semibold mt-3 hover:underline"
         >
-          ← Danh sách báo cáo
+          ← {t('report.backToList')}
         </button>
       </div>
     );
@@ -81,12 +83,12 @@ export default function Report() {
   if (!ehr) {
     return (
       <div className="max-w-3xl mx-auto text-center py-12">
-        <p className="text-gray-500">Báo cáo chưa được y tá cập nhật</p>
+        <p className="text-gray-500">{t('report.notUpdated')}</p>
         <button
           onClick={() => navigate('/customer/report')}
           className="text-teal-600 font-semibold mt-3 hover:underline"
         >
-          ← Quay lại
+          ← {t('report.back')}
         </button>
       </div>
     );
@@ -99,10 +101,10 @@ export default function Report() {
         onClick={() => navigate('/customer/report')}
         className="text-sm text-gray-500 hover:text-teal-600 transition flex items-center gap-1"
       >
-        ← Danh sách báo cáo
+        ← {t('report.backToList')}
       </button>
 
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-400/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-2xl" />
@@ -131,26 +133,26 @@ export default function Report() {
               </div>
             </div>
             <span className="text-xs bg-white/20 text-white border border-white/30 px-3 py-1.5 rounded-full font-bold">
-              ✓ Hoàn tất
+              ✓ {t('report.statusCompleted')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="bg-white/15 rounded-lg p-3">
               <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
-                Mã đơn
+                {t('report.labelOrderId')}
               </p>
               <p className="font-bold text-white text-sm">{booking.id}</p>
             </div>
             <div className="bg-white/15 rounded-lg p-3">
               <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
-                Ngày khám
+                {t('report.labelDate')}
               </p>
               <p className="font-bold text-white text-sm">{booking.date}</p>
             </div>
             <div className="bg-white/15 rounded-lg p-3">
               <p className="text-[10px] text-teal-50 font-semibold mb-0.5">
-                Thời lượng
+                {t('report.labelDuration')}
               </p>
               <p className="font-bold text-white text-sm">
                 {info.formattedDuration}
@@ -160,43 +162,47 @@ export default function Report() {
         </div>
       </div>
 
-      {/* Cảnh báo chưa thanh toán phụ phí — nền cam */}
+      {/* Cảnh báo chưa thanh toán phụ phí */}
       {needsPayment && (
         <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <span className="text-2xl">💳</span>
             <div className="flex-1">
               <p className="font-bold text-orange-700">
-                Chưa thanh toán phụ phí phát sinh
+                {t('report.unpaidTitle')}
               </p>
               <p className="text-sm text-orange-600 mt-1">
-                Ca khám vượt {info.overtimeHours.toFixed(2)} giờ (
-                {info.overtimeMinutes}p). Cần thanh toán{' '}
-                <b>{info.formattedFee} VNĐ</b> để hoàn tất.
+                {t('report.unpaidDesc', {
+                  hours: info.overtimeHours.toFixed(2),
+                  minutes: info.overtimeMinutes,
+                  fee: info.formattedFee,
+                })}
               </p>
               <button
                 onClick={() => setOvertimeModalOpen(true)}
                 className="mt-3 bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2 rounded-lg transition shadow-md shadow-rose-200"
               >
-                💳 Thanh toán ngay
+                💳 {t('report.payNow')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Đã thanh toán phụ phí — nền teal */}
+      {/* Đã thanh toán phụ phí */}
       {info.isOvertime && isOvertimePaid && (
         <div className="bg-teal-50 border-2 border-teal-300 rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">✅</span>
             <div>
               <p className="font-bold text-teal-700">
-                Đã thanh toán phụ phí
+                {t('report.paidTitle')}
               </p>
               <p className="text-xs text-teal-600 mt-0.5">
-                +{info.formattedFee} VNĐ • Giao dịch{' '}
-                {booking.overtimeTransaction?.transactionId || '—'}
+                {t('report.paidDesc', {
+                  fee: info.formattedFee,
+                  txn: booking.overtimeTransaction?.transactionId || '—',
+                })}
               </p>
             </div>
           </div>
@@ -206,19 +212,19 @@ export default function Report() {
       {/* ===== CHẨN ĐOÁN ===== */}
       <div className="bg-white rounded-2xl border-2 border-teal-200 p-5 shadow-sm">
         <h2 className="font-bold text-teal-700 mb-4 flex items-center gap-2">
-          🩺 Chẩn đoán & dặn dò của bác sĩ
+          🩺 {t('report.diagnosisTitle')}
         </h2>
         <div className="space-y-3 text-sm">
           <div className="bg-teal-50 rounded-lg p-3 border border-teal-100">
             <p className="text-xs text-teal-600 font-semibold mb-1">
-              Chẩn đoán
+              {t('report.labelDiagnosis')}
             </p>
             <p className="text-gray-800 font-medium">{ehr.diagnosis}</p>
           </div>
           {ehr.advice && (
             <div className="bg-rose-50 rounded-lg p-3 border border-rose-100">
               <p className="text-xs text-rose-600 font-semibold mb-1">
-                Dặn dò
+                {t('report.labelAdvice')}
               </p>
               <p className="text-gray-800">{ehr.advice}</p>
             </div>
@@ -226,24 +232,24 @@ export default function Report() {
           {ehr.followupDate && (
             <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3">
               <p className="text-sm text-amber-800 font-bold">
-                📅 Ngày hẹn tái khám: {ehr.followupDate}
+                📅 {t('report.labelFollowup')} {ehr.followupDate}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* ===== SINH HIỆU — 3 ô màu ===== */}
+      {/* ===== SINH HIỆU ===== */}
       {ehr.vitals &&
         (ehr.vitals.bp || ehr.vitals.pulse || ehr.vitals.weight) && (
           <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              💓 Chỉ số sinh hiệu
+              💓 {t('report.vitalsTitle')}
             </h2>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-teal-50 rounded-xl p-3 text-center border-2 border-teal-200">
                 <p className="text-[10px] text-teal-700 font-semibold mb-1">
-                  Huyết áp
+                  {t('report.vitalsBp')}
                 </p>
                 <p className="text-lg font-bold text-teal-700">
                   {ehr.vitals.bp || '—'}
@@ -251,7 +257,7 @@ export default function Report() {
               </div>
               <div className="bg-rose-50 rounded-xl p-3 text-center border-2 border-rose-200">
                 <p className="text-[10px] text-rose-700 font-semibold mb-1">
-                  Mạch
+                  {t('report.vitalsPulse')}
                 </p>
                 <p className="text-lg font-bold text-rose-600">
                   {ehr.vitals.pulse || '—'}
@@ -260,7 +266,7 @@ export default function Report() {
               </div>
               <div className="bg-amber-50 rounded-xl p-3 text-center border-2 border-amber-200">
                 <p className="text-[10px] text-amber-700 font-semibold mb-1">
-                  Cân nặng
+                  {t('report.vitalsWeight')}
                 </p>
                 <p className="text-lg font-bold text-amber-600">
                   {ehr.vitals.weight || '—'}
@@ -275,7 +281,7 @@ export default function Report() {
       {ehr.prescription && (
         <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            💊 Đơn thuốc
+            💊 {t('report.prescriptionTitle')}
           </h2>
           <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
             <p className="text-sm text-gray-800 whitespace-pre-line font-medium">
@@ -289,7 +295,7 @@ export default function Report() {
       {ehr.images?.length > 0 && (
         <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            📸 Hình ảnh cận lâm sàng
+            📸 {t('report.imagesTitle')}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {ehr.images.map((img, i) => (
@@ -316,7 +322,7 @@ export default function Report() {
       {nurse && (
         <div className="bg-white rounded-2xl border-2 border-gray-200 p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            👩‍⚕️ Y tá phụ trách
+            👩‍⚕️ {t('report.nurseTitle')}
           </h2>
           <div className="flex items-center gap-3">
             <img
@@ -334,7 +340,11 @@ export default function Report() {
                 );
                 return (
                   <p className="text-xs text-gray-500">
-                    ⭐ {rating.toFixed(1)} • {nurse.exp} năm • {count} đánh giá
+                    {t('report.nurseRatingExp', {
+                      rating: rating.toFixed(1),
+                      exp: nurse.exp,
+                      count,
+                    })}
                   </p>
                 );
               })()}
@@ -346,7 +356,7 @@ export default function Report() {
       {/* ===== ĐÁNH GIÁ ===== */}
       <div className="bg-white rounded-2xl border-2 border-rose-200 p-5 shadow-sm">
         <h2 className="font-bold text-rose-700 mb-4 flex items-center gap-2">
-          ⭐ Đánh giá chất lượng phục vụ
+          ⭐ {t('report.reviewSectionTitle')}
         </h2>
         {existingReview ? (
           <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-4">
@@ -355,14 +365,14 @@ export default function Report() {
                 {'⭐'.repeat(existingReview.stars)}
               </span>
               <span className="text-sm font-bold text-teal-700">
-                {existingReview.stars}/5 sao
+                {t('report.reviewStars', { stars: existingReview.stars })}
               </span>
             </div>
             {existingReview.comment && (
               <p className="text-sm text-gray-700">{existingReview.comment}</p>
             )}
             <p className="text-xs text-teal-600 mt-2 font-medium">
-              ✓ Cảm ơn bạn đã đánh giá!
+              ✓ {t('report.reviewThanks')}
             </p>
           </div>
         ) : (
@@ -370,7 +380,7 @@ export default function Report() {
             onClick={() => setReviewModalOpen(true)}
             className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-rose-200 hover:-translate-y-0.5"
           >
-            ⭐ Đánh giá Y tá ngay
+            ⭐ {t('report.reviewBtn')}
           </button>
         )}
       </div>
@@ -386,7 +396,9 @@ export default function Report() {
       <Modal
         open={reviewModalOpen}
         onClose={() => setReviewModalOpen(false)}
-        title={`Đánh giá ${nurse?.name || 'Y tá'}`}
+        title={t('report.reviewModalTitle', {
+          name: nurse?.name || t('report.nurseTitle'),
+        })}
         maxWidth="max-w-md"
       >
         <ReviewForm

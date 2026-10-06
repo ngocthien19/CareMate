@@ -1,30 +1,32 @@
 // src/pages/admin/Finance.jsx
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS, NURSES } from '../../mock';
 
 const RANGE_TABS = [
-  { key: 'day', label: 'Hôm nay' },
-  { key: 'week', label: 'Tuần này' },
-  { key: 'month', label: 'Tháng này' },
-  { key: 'all', label: 'Tất cả' },
+  { key: 'day', labelKey: 'adminFinance.rangeToday' },
+  { key: 'week', labelKey: 'adminFinance.rangeWeek' },
+  { key: 'month', labelKey: 'adminFinance.rangeMonth' },
+  { key: 'all', labelKey: 'adminFinance.rangeAll' },
 ];
 
-const STATUS_LABEL = {
-  confirmed: { label: 'Chờ bắt đầu', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  picking_up: { label: 'Đang đón BN', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  at_hospital: { label: 'Đã tới viện', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  examining: { label: 'Đang khám', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  done_exam: { label: 'Đã lấy thuốc', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  completed: { label: 'Đã hoàn tất', color: 'bg-gray-100 text-gray-700 border-gray-200' },
-  cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-700 border-red-200' },
+const STATUS_COLOR = {
+  confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
+  picking_up: 'bg-teal-100 text-teal-700 border-teal-200',
+  at_hospital: 'bg-teal-100 text-teal-700 border-teal-200',
+  examining: 'bg-teal-100 text-teal-700 border-teal-200',
+  done_exam: 'bg-amber-100 text-amber-700 border-amber-200',
+  completed: 'bg-gray-100 text-gray-700 border-gray-200',
+  cancelled: 'bg-red-100 text-red-700 border-red-200',
 };
 
 export default function AdminFinance() {
+  const { t } = useTranslation();
   const { bookings, patients, transactions, updateBooking } = useStore();
   const [range, setRange] = useState('all');
-  const [tab, setTab] = useState('bookings'); // 'bookings' | 'transactions'
+  const [tab, setTab] = useState('bookings');
 
   // Lọc theo khoảng thời gian
   const cutoff = useMemo(() => {
@@ -37,7 +39,6 @@ export default function AdminFinance() {
     return c;
   }, [range]);
 
-  // List ca đặt lịch (đã thanh toán phí gói)
   const bookingList = useMemo(
     () =>
       bookings
@@ -52,7 +53,6 @@ export default function AdminFinance() {
     [bookings, cutoff]
   );
 
-  // Tổng doanh thu
   const totals = useMemo(() => {
     let base = 0;
     let overtime = 0;
@@ -65,26 +65,24 @@ export default function AdminFinance() {
     return { base, overtime, grand: base + overtime };
   }, [bookingList]);
 
-  // Giao dịch
   const txnList = useMemo(
     () =>
       transactions
-        .map((t) => ({
-          ...t,
-          booking: bookings.find((b) => b.id === t.bookingId),
+        .map((txn) => ({
+          ...txn,
+          booking: bookings.find((b) => b.id === txn.bookingId),
         }))
         .sort((a, b) => new Date(b.date) - new Date(a.date)),
     [transactions, bookings]
   );
 
-  // Ca cần hoàn tiền
   const refundable = bookings.filter(
     (b) => b.status === 'cancelled' && b.refundStatus !== 'refunded'
   );
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-5 md:p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -93,51 +91,51 @@ export default function AdminFinance() {
           <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
             <span className="text-[10px] font-semibold text-white">
-              Đối soát tài chính
+              {t('adminFinance.headerBadge')}
             </span>
           </div>
           <h1 className="text-xl md:text-2xl font-bold text-white">
-            💵 Tài chính & VNPay
+            💵 {t('adminFinance.headerTitle')}
           </h1>
           <p className="text-xs md:text-sm text-teal-50 mt-1">
-            Theo dõi doanh thu, đối soát giao dịch và hoàn tiền
+            {t('adminFinance.headerSubtitle')}
           </p>
         </div>
       </div>
 
       {/* ===== RANGE TABS ===== */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 p-1.5 inline-flex flex-wrap gap-1 shadow-sm">
-        {RANGE_TABS.map((t) => (
+        {RANGE_TABS.map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setRange(t.key)}
+            key={tabItem.key}
+            onClick={() => setRange(tabItem.key)}
             className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition ${
-              range === t.key
+              range === tabItem.key
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
                 : 'text-gray-600 hover:bg-rose-500 hover:text-white'
             }`}
           >
-            {t.label}
+            {t(tabItem.labelKey)}
           </button>
         ))}
       </div>
 
-      {/* ===== STATS — 3 ô màu ===== */}
+      {/* ===== STATS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatBox
-          label="Phí gói cơ bản"
+          label={t('adminFinance.statBaseFee')}
           value={totals.base}
           icon="💵"
           color="teal"
         />
         <StatBox
-          label="Phụ phí phát sinh"
+          label={t('adminFinance.statOvertimeFee')}
           value={totals.overtime}
           icon="⚡"
           color="orange"
         />
         <StatBox
-          label="Tổng doanh thu"
+          label={t('adminFinance.statTotalRevenue')}
           value={totals.grand}
           icon="💰"
           color="rose"
@@ -148,7 +146,7 @@ export default function AdminFinance() {
       {refundable.length > 0 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 shadow-sm">
           <p className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-sm md:text-base">
-            💸 Ca cần hoàn tiền ({refundable.length})
+            💸 {t('adminFinance.refundTitle', { count: refundable.length })}
           </p>
           <div className="space-y-2">
             {refundable.map((b) => (
@@ -158,7 +156,7 @@ export default function AdminFinance() {
               >
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-gray-800 truncate">
-                    Ca {b.id}
+                    {t('adminFinance.refundCase', { id: b.id })}
                   </p>
                   <p className="text-xs text-gray-500">
                     {b.date} • {b.amount?.toLocaleString('vi-VN')}đ
@@ -167,11 +165,11 @@ export default function AdminFinance() {
                 <button
                   onClick={() => {
                     updateBooking(b.id, { refundStatus: 'refunded' });
-                    toast.success('Đã hoàn tiền qua VNPay');
+                    toast.success(t('adminFinance.refundSuccess'));
                   }}
                   className="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-md shadow-rose-200 w-full sm:w-auto whitespace-nowrap"
                 >
-                  💸 Hoàn tiền
+                  💸 {t('adminFinance.refundBtn')}
                 </button>
               </div>
             ))}
@@ -189,7 +187,7 @@ export default function AdminFinance() {
               : 'text-gray-600 hover:bg-rose-500 hover:text-white'
           }`}
         >
-          📋 Ca đã đặt ({bookingList.length})
+          📋 {t('adminFinance.tabBookings', { count: bookingList.length })}
         </button>
         <button
           onClick={() => setTab('transactions')}
@@ -199,7 +197,7 @@ export default function AdminFinance() {
               : 'text-gray-600 hover:bg-rose-500 hover:text-white'
           }`}
         >
-          💳 Lịch sử giao dịch ({txnList.length})
+          💳 {t('adminFinance.tabTransactions', { count: txnList.length })}
         </button>
       </div>
 
@@ -208,10 +206,13 @@ export default function AdminFinance() {
         <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
           <div className="px-4 md:px-5 py-3 bg-teal-50 border-b-2 border-teal-100">
             <p className="font-bold text-teal-700 flex items-center gap-2 text-sm md:text-base">
-              📋 Tất cả ca đã đặt ({bookingList.length})
+              📋{' '}
+              {t('adminFinance.bookingsHeader', {
+                count: bookingList.length,
+              })}
             </p>
             <p className="text-xs text-teal-600 mt-0.5">
-              Chỉ hiển thị các ca đã thanh toán phí gói cơ bản
+              {t('adminFinance.bookingsSubheader')}
             </p>
           </div>
 
@@ -219,39 +220,38 @@ export default function AdminFinance() {
             <div className="p-12 text-center">
               <div className="text-4xl mb-2">📋</div>
               <p className="text-gray-500 text-sm font-medium">
-                Chưa có ca nào
+                {t('adminFinance.bookingsEmpty')}
               </p>
             </div>
           ) : (
             <>
-              {/* Scroll wrapper */}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[900px]">
                   <thead className="bg-teal-50 border-b-2 border-teal-100">
                     <tr>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Mã ca
+                        {t('adminFinance.tableOrderId')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Khách hàng
+                        {t('adminFinance.tableCustomer')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Y tá
+                        {t('adminFinance.tableNurse')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Bệnh viện
+                        {t('adminFinance.tableHospital')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Ngày đặt
+                        {t('adminFinance.tableCreatedAt')}
                       </th>
                       <th className="text-right px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Phí gói
+                        {t('adminFinance.tableBasePrice')}
                       </th>
                       <th className="text-right px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Phụ phí
+                        {t('adminFinance.tableOvertimePrice')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Trạng thái
+                        {t('adminFinance.tableStatus')}
                       </th>
                     </tr>
                   </thead>
@@ -264,14 +264,25 @@ export default function AdminFinance() {
                       const hospital = HOSPITALS.find(
                         (h) => h.id === b.hospitalId
                       );
-                      const statusInfo =
-                        STATUS_LABEL[b.status] || STATUS_LABEL.confirmed;
+                      const statusColor =
+                        STATUS_COLOR[b.status] || STATUS_COLOR.confirmed;
+                      const statusLabel = t(`common.status.${b.status}`);
                       const hasOvertime = b.overtimePaymentStatus === 'paid';
 
-                      const hospitalName = b.hospitalName || hospital?.name || '—';
+                      const hospitalName =
+                        b.hospitalName || hospital?.name || '—';
+
+                      const relationLabel = patient?.relation
+                        ? t(`patients.relations.${patient.relation}`, {
+                            defaultValue: patient.relation,
+                          })
+                        : '';
 
                       return (
-                        <tr key={b.id} className="hover:bg-teal-50/30 transition">
+                        <tr
+                          key={b.id}
+                          className="hover:bg-teal-50/30 transition"
+                        >
                           <td className="px-3 md:px-4 py-3 font-mono text-xs text-teal-700 font-bold whitespace-nowrap">
                             {b.id}
                           </td>
@@ -293,7 +304,7 @@ export default function AdminFinance() {
                                   {patient?.name}
                                 </p>
                                 <p className="text-[10px] text-gray-500">
-                                  {patient?.relation}
+                                  {relationLabel}
                                 </p>
                               </div>
                             </div>
@@ -315,7 +326,9 @@ export default function AdminFinance() {
                           </td>
                           <td className="px-3 md:px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
                             {b.createdAt
-                              ? new Date(b.createdAt).toLocaleDateString('vi-VN')
+                              ? new Date(b.createdAt).toLocaleDateString(
+                                  'vi-VN'
+                                )
                               : '—'}
                           </td>
                           <td className="px-3 md:px-4 py-3 text-right font-bold text-teal-700 text-xs whitespace-nowrap">
@@ -328,7 +341,7 @@ export default function AdminFinance() {
                               </span>
                             ) : b.overtimePaymentStatus === 'unpaid' ? (
                               <span className="text-[10px] text-amber-600 italic font-semibold">
-                                Chưa TT
+                                {t('adminFinance.overtimeUnpaid')}
                               </span>
                             ) : (
                               <span className="text-gray-400">—</span>
@@ -336,9 +349,9 @@ export default function AdminFinance() {
                           </td>
                           <td className="px-3 md:px-4 py-3">
                             <span
-                              className={`text-[10px] px-2 py-1 rounded-full border-2 font-bold whitespace-nowrap inline-block ${statusInfo.color}`}
+                              className={`text-[10px] px-2 py-1 rounded-full border-2 font-bold whitespace-nowrap inline-block ${statusColor}`}
                             >
-                              {statusInfo.label}
+                              {statusLabel}
                             </span>
                           </td>
                         </tr>
@@ -352,7 +365,7 @@ export default function AdminFinance() {
                         colSpan="5"
                         className="px-3 md:px-4 py-3 text-right font-bold text-teal-700 text-sm"
                       >
-                        TỔNG CỘNG
+                        {t('adminFinance.tableTotal')}
                       </td>
                       <td className="px-3 md:px-4 py-3 text-right font-bold text-teal-700 text-sm whitespace-nowrap">
                         {totals.base.toLocaleString('vi-VN')}đ
@@ -371,7 +384,7 @@ export default function AdminFinance() {
               {/* Hint scroll trên mobile */}
               <div className="sm:hidden bg-teal-50 border-t-2 border-teal-100 px-4 py-2 text-center">
                 <p className="text-[10px] text-teal-600 font-semibold">
-                  ← Vuốt ngang để xem thêm →
+                  {t('adminFinance.scrollHint')}
                 </p>
               </div>
             </>
@@ -384,7 +397,7 @@ export default function AdminFinance() {
         <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
           <div className="px-4 md:px-5 py-3 bg-teal-50 border-b-2 border-teal-100">
             <p className="font-bold text-teal-700 flex items-center gap-2 text-sm md:text-base">
-              💳 Lịch sử giao dịch VNPay ({txnList.length})
+              💳 {t('adminFinance.transactionsHeader', { count: txnList.length })}
             </p>
           </div>
 
@@ -392,7 +405,7 @@ export default function AdminFinance() {
             <div className="p-12 text-center">
               <div className="text-4xl mb-2">💳</div>
               <p className="text-gray-500 text-sm font-medium">
-                Chưa có giao dịch
+                {t('adminFinance.transactionsEmpty')}
               </p>
             </div>
           ) : (
@@ -402,54 +415,59 @@ export default function AdminFinance() {
                   <thead className="bg-teal-50 border-b-2 border-teal-100">
                     <tr>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Mã GD
+                        {t('adminFinance.tableTxnId')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Ca khám
+                        {t('adminFinance.tableTxnBooking')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Loại
+                        {t('adminFinance.tableTxnType')}
                       </th>
                       <th className="text-right px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Số tiền
+                        {t('adminFinance.tableTxnAmount')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Ngày
+                        {t('adminFinance.tableTxnDate')}
                       </th>
                       <th className="text-left px-3 md:px-4 py-3 font-bold text-teal-700 whitespace-nowrap">
-                        Trạng thái
+                        {t('adminFinance.tableTxnStatus')}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {txnList.map((t) => (
-                      <tr key={t.id} className="hover:bg-teal-50/30 transition">
+                    {txnList.map((txn) => (
+                      <tr
+                        key={txn.id}
+                        className="hover:bg-teal-50/30 transition"
+                      >
                         <td className="px-3 md:px-4 py-3 font-mono text-xs text-gray-600 whitespace-nowrap">
-                          {t.id}
+                          {txn.id}
                         </td>
                         <td className="px-3 md:px-4 py-3 text-gray-800 font-semibold whitespace-nowrap">
-                          {t.bookingId}
+                          {txn.bookingId}
                         </td>
                         <td className="px-3 md:px-4 py-3">
                           <span
                             className={`text-xs px-2.5 py-1 rounded-full font-bold border-2 whitespace-nowrap inline-block ${
-                              t.type === 'base'
+                              txn.type === 'base'
                                 ? 'bg-teal-50 text-teal-700 border-teal-200'
                                 : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}
                           >
-                            {t.type === 'base' ? '💵 Phí gói' : '⚡ Phụ phí'}
+                            {txn.type === 'base'
+                              ? `💵 ${t('adminFinance.txnTypeBase')}`
+                              : `⚡ ${t('adminFinance.txnTypeOvertime')}`}
                           </span>
                         </td>
                         <td className="px-3 md:px-4 py-3 text-right font-bold text-rose-600 whitespace-nowrap">
-                          {t.amount.toLocaleString('vi-VN')}đ
+                          {txn.amount.toLocaleString('vi-VN')}đ
                         </td>
                         <td className="px-3 md:px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                          {t.date}
+                          {txn.date}
                         </td>
                         <td className="px-3 md:px-4 py-3">
                           <span className="text-xs bg-teal-100 text-teal-700 border-2 border-teal-200 px-2 py-1 rounded-full font-bold whitespace-nowrap inline-block">
-                            ✓ Thành công
+                            ✓ {t('adminFinance.txnSuccess')}
                           </span>
                         </td>
                       </tr>
@@ -461,7 +479,7 @@ export default function AdminFinance() {
               {/* Hint scroll trên mobile */}
               <div className="sm:hidden bg-teal-50 border-t-2 border-teal-100 px-4 py-2 text-center">
                 <p className="text-[10px] text-teal-600 font-semibold">
-                  ← Vuốt ngang để xem thêm →
+                  {t('adminFinance.scrollHint')}
                 </p>
               </div>
             </>

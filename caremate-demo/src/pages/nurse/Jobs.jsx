@@ -1,37 +1,21 @@
 // src/pages/nurse/Jobs.jsx
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS } from '../../mock';
 
-const STATUS_LABEL = {
-  confirmed: {
-    label: 'Chờ bắt đầu',
-    color: 'bg-blue-100 text-blue-700 border-blue-200',
-  },
-  picking_up: {
-    label: 'Đang đón BN',
-    color: 'bg-teal-100 text-teal-700 border-teal-200',
-  },
-  at_hospital: {
-    label: 'Đã tới viện',
-    color: 'bg-teal-100 text-teal-700 border-teal-200',
-  },
-  examining: {
-    label: 'Đang khám',
-    color: 'bg-teal-100 text-teal-700 border-teal-200',
-  },
-  done_exam: {
-    label: 'Đã lấy thuốc',
-    color: 'bg-amber-100 text-amber-700 border-amber-200',
-  },
-  completed: {
-    label: 'Đã hoàn tất',
-    color: 'bg-gray-100 text-gray-700 border-gray-200',
-  },
+const STATUS_COLOR = {
+  confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
+  picking_up: 'bg-teal-100 text-teal-700 border-teal-200',
+  at_hospital: 'bg-teal-100 text-teal-700 border-teal-200',
+  examining: 'bg-teal-100 text-teal-700 border-teal-200',
+  done_exam: 'bg-amber-100 text-amber-700 border-amber-200',
+  completed: 'bg-gray-100 text-gray-700 border-gray-200',
 };
 
 export default function NurseJobs() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, bookings, patients, customHospitals } = useStore();
 
   const HOSPITALS_LIST = customHospitals || HOSPITALS;
@@ -45,7 +29,7 @@ export default function NurseJobs() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -55,19 +39,23 @@ export default function NurseJobs() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Bảng điều phối ca
+                {t('nurseJobs.headerBadge')}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">
-              📋 Ca khám của tôi
+              📋 {t('nurseJobs.headerTitle')}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              Xin chào <b className="text-white">{user?.name}</b> — có{' '}
-              <b className="text-white">{active.length}</b> ca đang chờ xử lý
+              {t('nurseJobs.headerGreeting', {
+                name: user?.name,
+                count: active.length,
+              })}
             </p>
           </div>
           <div className="bg-white/20 backdrop-blur rounded-2xl px-4 py-2 text-right">
-            <p className="text-[10px] text-teal-50 font-semibold">Đang chờ</p>
+            <p className="text-[10px] text-teal-50 font-semibold">
+              {t('nurseJobs.waitingLabel')}
+            </p>
             <p className="text-3xl font-bold text-white leading-none">
               {active.length}
             </p>
@@ -79,13 +67,13 @@ export default function NurseJobs() {
       <div>
         <h2 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-teal-500" />
-          ĐANG DIỄN RA ({active.length})
+          {t('nurseJobs.sectionActive', { count: active.length })}
         </h2>
         {active.length === 0 ? (
           <div className="bg-teal-50 rounded-2xl p-8 text-center border-2 border-dashed border-teal-200">
             <div className="text-4xl mb-2">☕</div>
             <p className="text-gray-600 text-sm font-medium">
-              Không có ca nào đang chờ
+              {t('nurseJobs.emptyActive')}
             </p>
           </div>
         ) : (
@@ -108,7 +96,7 @@ export default function NurseJobs() {
         <div>
           <h2 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-rose-400" />
-            ĐÃ HOÀN TẤT ({done.length})
+            {t('nurseJobs.sectionDone', { count: done.length })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {done.map((j) => (
@@ -128,30 +116,46 @@ export default function NurseJobs() {
 }
 
 function JobCard({ job, patient, hospitals, onClick }) {
+  const { t } = useTranslation();
   const hospital = hospitals.find((h) => h.id === job.hospitalId);
-  const statusInfo = STATUS_LABEL[job.status] || STATUS_LABEL.confirmed;
+  const statusColor = STATUS_COLOR[job.status] || STATUS_COLOR.confirmed;
+  const statusLabel = t(`common.status.${job.status}`);
 
   const hospitalName = job.hospitalName || hospital?.name || '—';
+
+  const relationLabel = patient?.relation
+    ? t(`patients.relations.${patient.relation}`, {
+        defaultValue: patient.relation,
+      })
+    : '';
+  const genderLabel = patient?.gender
+    ? patient.gender === 'male'
+      ? t('patients.formGenderMale')
+      : patient.gender === 'female'
+      ? t('patients.formGenderFemale')
+      : patient.gender
+    : '';
 
   return (
     <button
       onClick={onClick}
       className="relative bg-white rounded-2xl border-2 border-gray-200 p-5 text-left hover:border-rose-300 hover:shadow-xl hover:shadow-rose-100 hover:-translate-y-1 transition-all duration-300 group overflow-hidden"
     >
-      {/* Vệt màu trái TEAL */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 group-hover:w-1.5 group-hover:bg-rose-500 transition-all" />
 
       <div className="pl-2">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
-            <p className="text-xs text-gray-400 font-semibold">Mã đơn</p>
+            <p className="text-xs text-gray-400 font-semibold">
+              {t('nurseJobs.orderId')}
+            </p>
             <p className="text-sm font-bold text-teal-700">{job.id}</p>
           </div>
           <span
-            className={`text-[10px] px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusInfo.color}`}
+            className={`text-[10px] px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusColor}`}
           >
-            {statusInfo.label}
+            {statusLabel}
           </span>
         </div>
 
@@ -173,7 +177,11 @@ function JobCard({ job, patient, hospitals, onClick }) {
               {patient?.name}
             </p>
             <p className="text-xs text-gray-500">
-              {patient?.relation} • {patient?.gender} • {patient?.dob}
+              {t('nurseJobs.patientRelationGender', {
+                relation: relationLabel,
+                gender: genderLabel,
+                dob: patient?.dob,
+              })}
             </p>
           </div>
         </div>
@@ -202,14 +210,19 @@ function JobCard({ job, patient, hospitals, onClick }) {
         {patient?.allergies?.length > 0 && (
           <div className="bg-red-50 border-2 border-red-200 rounded-lg px-3 py-2 mt-3">
             <p className="text-[10px] text-red-700 font-bold">
-              🚨 Dị ứng: {patient.allergies.join(', ')}
+              🚨 {t('nurseJobs.allergyLabel')}{' '}
+              {patient.allergies
+                .map((a) =>
+                  t(`patients.allergies.${a}`, { defaultValue: a })
+                )
+                .join(', ')}
             </p>
           </div>
         )}
 
         {/* CTA hint */}
         <p className="text-xs text-rose-500 font-bold mt-3 group-hover:underline">
-          Xem chi tiết →
+          {t('nurseJobs.viewDetail')} →
         </p>
       </div>
     </button>

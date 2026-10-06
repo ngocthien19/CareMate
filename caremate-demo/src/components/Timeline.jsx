@@ -1,19 +1,16 @@
 // src/components/Timeline.jsx
+import { useTranslation } from 'react-i18next';
 
 export const STATUS_STEPS = [
-  { key: 'picking_up', label: 'Đã đón bệnh nhân tại nhà', icon: '🚗' },
-  { key: 'at_hospital', label: 'Đã tới viện & lấy số', icon: '🏥' },
-  { key: 'examining', label: 'Đang cùng bác sĩ thăm khám', icon: '🩺' },
-  { key: 'done_exam', label: 'Đã hoàn tất khám & lấy thuốc', icon: '💊' },
-  { key: 'completed', label: 'Đã đưa bệnh nhân về nhà an toàn', icon: '🏠' },
+  { key: 'picking_up', labelKey: 'timeline.picking_up', icon: '🚗' },
+  { key: 'at_hospital', labelKey: 'timeline.at_hospital', icon: '🏥' },
+  { key: 'examining', labelKey: 'timeline.examining', icon: '🩺' },
+  { key: 'done_exam', labelKey: 'timeline.done_exam', icon: '💊' },
+  { key: 'completed', labelKey: 'timeline.completed', icon: '🏠' },
 ];
 
-/**
- * Timeline hiển thị tiến trình ca khám
- * @param {string} currentStatus - trạng thái hiện tại
- * @param {object} extra - thông tin thêm (số thứ tự, giờ các mốc)
- */
 export default function Timeline({ currentStatus, extra = {} }) {
+  const { t } = useTranslation();
   const currentIdx = STATUS_STEPS.findIndex((s) => s.key === currentStatus);
 
   return (
@@ -25,7 +22,6 @@ export default function Timeline({ currentStatus, extra = {} }) {
 
         return (
           <div key={step.key} className="flex gap-3">
-            {/* Cột trái: icon + line */}
             <div className="flex flex-col items-center shrink-0">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition ${
@@ -47,7 +43,6 @@ export default function Timeline({ currentStatus, extra = {} }) {
               )}
             </div>
 
-            {/* Cột phải: nội dung */}
             <div
               className={`flex-1 pb-4 transition ${
                 pending ? 'opacity-50' : 'opacity-100'
@@ -62,19 +57,18 @@ export default function Timeline({ currentStatus, extra = {} }) {
                     : 'text-gray-400'
                 }`}
               >
-                {step.label}
+                {t(step.labelKey)}
               </p>
 
-              {/* Extra info cho từng bước */}
               {step.key === 'at_hospital' && extra.queueNumber && (
                 <p className="text-xs text-teal-600 mt-1">
-                  Số thứ tự bốc được: <b>{extra.queueNumber}</b>
+                  {t('timeline.queueNumber')} <b>{extra.queueNumber}</b>
                 </p>
               )}
 
               {active && !extra.queueNumber && (
                 <p className="text-xs text-teal-600 mt-1 animate-pulse">
-                  Đang diễn ra...
+                  {t('timeline.inProgress')}
                 </p>
               )}
             </div>

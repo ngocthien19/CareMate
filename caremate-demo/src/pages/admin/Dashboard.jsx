@@ -1,11 +1,13 @@
 // src/pages/admin/Dashboard.jsx
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS } from '../../mock';
 import Modal from '../../components/Modal';
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const {
     bookings,
     patients,
@@ -21,8 +23,8 @@ export default function AdminDashboard() {
 
   // Update timer mỗi 5s
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 5000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(timer);
   }, []);
 
   // TẤT CẢ ca khám — sort theo createdAt mới nhất
@@ -63,15 +65,31 @@ export default function AdminDashboard() {
   const activeSOS = sosAlerts.filter((a) => !a.resolved);
 
   const FILTER_TABS = [
-    { key: 'all', label: 'Tất cả', count: allBookings.length },
-    { key: 'active', label: 'Đang diễn ra', count: active.length },
-    { key: 'confirmed', label: 'Chờ bắt đầu', count: waiting.length },
-    { key: 'completed', label: 'Đã hoàn tất', count: completed.length },
+    {
+      key: 'all',
+      labelKey: 'adminDashboard.filterAll',
+      count: allBookings.length,
+    },
+    {
+      key: 'active',
+      labelKey: 'adminDashboard.filterActive',
+      count: active.length,
+    },
+    {
+      key: 'confirmed',
+      labelKey: 'adminDashboard.filterWaiting',
+      count: waiting.length,
+    },
+    {
+      key: 'completed',
+      labelKey: 'adminDashboard.filterCompleted',
+      count: completed.length,
+    },
   ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -81,19 +99,19 @@ export default function AdminDashboard() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Trung tâm điều phối
+                {t('adminDashboard.headerBadge')}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">
-              📊 Giám sát ca khám
+              📊 {t('adminDashboard.headerTitle')}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              Theo dõi toàn bộ ca khám tại TP.HCM — realtime
+              {t('adminDashboard.headerSubtitle')}
             </p>
           </div>
           <div className="bg-white/20 backdrop-blur rounded-2xl px-4 py-2 text-right">
             <p className="text-[10px] text-teal-50 font-semibold">
-              Đang diễn ra
+              {t('adminDashboard.activeLabel')}
             </p>
             <p className="text-3xl font-bold text-white leading-none">
               {active.length}
@@ -109,10 +127,10 @@ export default function AdminDashboard() {
             <span className="text-3xl animate-pulse">🚨</span>
             <div className="flex-1">
               <p className="font-bold text-red-700 text-lg">
-                CẢNH BÁO SOS ({activeSOS.length})
+                {t('adminDashboard.sosTitle', { count: activeSOS.length })}
               </p>
               <p className="text-xs text-red-600 mt-0.5 font-semibold">
-                Y tá cần hỗ trợ khẩn cấp — Liên hệ ngay lập tức
+                {t('adminDashboard.sosSubtitle')}
               </p>
             </div>
           </div>
@@ -124,7 +142,7 @@ export default function AdminDashboard() {
                 sos={s}
                 onResolve={() => {
                   resolveSOS(s.id);
-                  toast.success('Đã đánh dấu xử lý SOS');
+                  toast.success(t('adminDashboard.sosResolved'));
                 }}
               />
             ))}
@@ -135,31 +153,31 @@ export default function AdminDashboard() {
       {/* ===== STATS ===== */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatCard
-          label="Tổng ca"
+          label={t('adminDashboard.statTotal')}
           value={allBookings.length}
           icon="📋"
           color="gray"
         />
         <StatCard
-          label="Đang diễn ra"
+          label={t('adminDashboard.statActive')}
           value={active.length}
           icon="🟢"
           color="teal"
         />
         <StatCard
-          label="Chờ bắt đầu"
+          label={t('adminDashboard.statWaiting')}
           value={waiting.length}
           icon="⏳"
           color="blue"
         />
         <StatCard
-          label="Vượt 4h"
+          label={t('adminDashboard.statOvertime')}
           value={overtimeList.length}
           icon="⚠️"
           color="orange"
         />
         <StatCard
-          label="SOS chưa xử lý"
+          label={t('adminDashboard.statSos')}
           value={activeSOS.length}
           icon="🚨"
           color="red"
@@ -168,25 +186,25 @@ export default function AdminDashboard() {
 
       {/* ===== FILTER TABS ===== */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 p-1.5 inline-flex flex-wrap gap-1 shadow-sm">
-        {FILTER_TABS.map((t) => (
+        {FILTER_TABS.map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setStatusFilter(t.key)}
+            key={tabItem.key}
+            onClick={() => setStatusFilter(tabItem.key)}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 ${
-              statusFilter === t.key
+              statusFilter === tabItem.key
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
                 : 'text-gray-600 hover:bg-rose-500 hover:text-white'
             }`}
           >
-            {t.label}
+            {t(tabItem.labelKey)}
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                statusFilter === t.key
+                statusFilter === tabItem.key
                   ? 'bg-white/25 text-white'
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
-              {t.count}
+              {tabItem.count}
             </span>
           </button>
         ))}
@@ -196,10 +214,10 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
         <div className="px-5 py-3 bg-teal-50 border-b-2 border-teal-100 flex items-center justify-between flex-wrap gap-2">
           <p className="font-bold text-teal-700 flex items-center gap-2">
-            📋 Danh sách ca khám ({filtered.length})
+            📋 {t('adminDashboard.listTitle', { count: filtered.length })}
           </p>
           <p className="text-xs text-teal-600 bg-white border border-teal-200 px-2.5 py-1 rounded-full font-semibold">
-            Tự động cập nhật mỗi 5 giây
+            {t('adminDashboard.listAutoUpdate')}
           </p>
         </div>
 
@@ -207,7 +225,7 @@ export default function AdminDashboard() {
           <div className="p-12 text-center">
             <div className="text-4xl mb-2">📋</div>
             <p className="text-gray-500 text-sm font-medium">
-              Không có ca nào
+              {t('adminDashboard.listEmpty')}
             </p>
           </div>
         ) : (
@@ -231,7 +249,7 @@ export default function AdminDashboard() {
       <Modal
         open={!!reassignModal}
         onClose={() => setReassignModal(null)}
-        title="Gán lại Y tá phụ trách"
+        title={t('adminDashboard.reassignModalTitle')}
         maxWidth="max-w-md"
       >
         {reassignModal && (
@@ -240,7 +258,7 @@ export default function AdminDashboard() {
             nurses={nurses.filter((n) => n.id !== reassignModal.nurseId)}
             onSave={(newNurseId) => {
               updateBooking(reassignModal.id, { nurseId: newNurseId });
-              toast.success('Đã gán lại ca khám');
+              toast.success(t('adminDashboard.reassignSuccess'));
               setReassignModal(null);
             }}
             onCancel={() => setReassignModal(null)}
@@ -276,6 +294,7 @@ function StatCard({ label, value, icon, color }) {
 
 // ===== BookingRow =====
 function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
+  const { t } = useTranslation();
   const elapsed = booking.startTime
     ? (now - booking.startTime) / 3600000
     : 0;
@@ -287,16 +306,18 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
 
   const hospitalName = booking.hospitalName || hospital?.name || '—';
 
-  const STATUS_MAP = {
-    confirmed: { label: 'Chờ bắt đầu', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-    picking_up: { label: 'Đang đón BN', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-    at_hospital: { label: 'Đã tới viện', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-    examining: { label: 'Đang khám', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-    done_exam: { label: 'Đã lấy thuốc', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    completed: { label: 'Đã hoàn tất', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  const STATUS_COLOR = {
+    confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
+    picking_up: 'bg-teal-100 text-teal-700 border-teal-200',
+    at_hospital: 'bg-teal-100 text-teal-700 border-teal-200',
+    examining: 'bg-teal-100 text-teal-700 border-teal-200',
+    done_exam: 'bg-amber-100 text-amber-700 border-amber-200',
+    completed: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
-  const statusInfo = STATUS_MAP[booking.status] || STATUS_MAP.confirmed;
+  const statusColor =
+    STATUS_COLOR[booking.status] || STATUS_COLOR.confirmed;
+  const statusLabel = t(`common.status.${booking.status}`);
   const isCompleted = booking.status === 'completed';
 
   return (
@@ -328,9 +349,9 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
 
       <div className="flex items-center gap-3">
         <span
-          className={`text-xs px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusInfo.color}`}
+          className={`text-xs px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusColor}`}
         >
-          {statusInfo.label}
+          {statusLabel}
         </span>
 
         {/* Timer: chỉ hiện khi đang chạy */}
@@ -362,7 +383,9 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
                 return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
               })()}
             </p>
-            <p className="text-[10px] text-gray-500 font-semibold">tổng</p>
+            <p className="text-[10px] text-gray-500 font-semibold">
+              {t('adminDashboard.durationLabel')}
+            </p>
           </div>
         )}
 
@@ -372,7 +395,7 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
             onClick={onReassign}
             className="text-xs text-white font-bold bg-rose-500 hover:bg-rose-600 px-3 py-1.5 rounded-lg transition shadow-md shadow-rose-200"
           >
-            🔄 Đổi
+            🔄 {t('adminDashboard.changeNurseBtn')}
           </button>
         )}
       </div>
@@ -382,6 +405,7 @@ function BookingRow({ booking, now, patient, nurse, hospital, onReassign }) {
 
 // ===== SOSCard =====
 function SOSCard({ sos, onResolve }) {
+  const { t } = useTranslation();
   const timeStr = new Date(sos.time).toLocaleString('vi-VN', {
     day: '2-digit',
     month: '2-digit',
@@ -401,7 +425,9 @@ function SOSCard({ sos, onResolve }) {
         <div className="flex items-center gap-2 text-xs">
           <span>🕒 {timeStr}</span>
           <span className="bg-white/20 px-2 py-0.5 rounded-full font-semibold">
-            {minutesAgo < 1 ? 'Vừa xong' : `${minutesAgo} phút trước`}
+            {minutesAgo < 1
+              ? t('adminDashboard.sosCard.justNow')
+              : t('adminDashboard.sosCard.minutesAgo', { count: minutesAgo })}
           </span>
         </div>
       </div>
@@ -409,7 +435,7 @@ function SOSCard({ sos, onResolve }) {
       <div className="p-4 space-y-4">
         <div>
           <p className="text-xs text-red-600 font-bold mb-2 uppercase">
-            👤 Người bệnh
+            👤 {t('adminDashboard.sosCard.patientSection')}
           </p>
           <div className="flex items-center gap-3">
             {sos.patientAvatar ? (
@@ -443,7 +469,7 @@ function SOSCard({ sos, onResolve }) {
               )}
               {sos.patientBhkyt && (
                 <p className="text-xs text-gray-500 mt-0.5">
-                  🆔 BHYT: {sos.patientBhkyt}
+                  🆔 {t('adminDashboard.sosCard.bhytPrefix')} {sos.patientBhkyt}
                 </p>
               )}
             </div>
@@ -455,14 +481,24 @@ function SOSCard({ sos, onResolve }) {
               {sos.patientAllergies?.length > 0 && (
                 <div className="bg-red-50 border-2 border-red-200 rounded-lg px-3 py-2">
                   <p className="text-xs text-red-700 font-bold">
-                    🚨 DỊ ỨNG: {sos.patientAllergies.join(', ')}
+                    🚨 {t('adminDashboard.sosCard.allergyPrefix')}{' '}
+                    {sos.patientAllergies
+                      .map((a) =>
+                        t(`patients.allergies.${a}`, { defaultValue: a })
+                      )
+                      .join(', ')}
                   </p>
                 </div>
               )}
               {sos.patientConditions?.length > 0 && (
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-lg px-3 py-2">
                   <p className="text-xs text-amber-700 font-bold">
-                    ⚠️ BỆNH NỀN: {sos.patientConditions.join(', ')}
+                    ⚠️ {t('adminDashboard.sosCard.conditionPrefix')}{' '}
+                    {sos.patientConditions
+                      .map((c) =>
+                        t(`patients.conditions.${c}`, { defaultValue: c })
+                      )
+                      .join(', ')}
                   </p>
                 </div>
               )}
@@ -472,7 +508,7 @@ function SOSCard({ sos, onResolve }) {
 
         <div className="pt-3 border-t border-gray-100">
           <p className="text-xs text-teal-600 font-bold mb-2 uppercase">
-            👩‍⚕️ Y tá gửi SOS
+            👩‍⚕️ {t('adminDashboard.sosCard.nurseSection')}
           </p>
           <div className="flex items-center gap-3">
             {sos.nurseAvatar ? (
@@ -504,7 +540,9 @@ function SOSCard({ sos, onResolve }) {
 
         <div className="pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
           <div className="p-3 rounded-lg bg-teal-50 border border-teal-100">
-            <p className="text-teal-600 font-semibold mb-0.5">🏥 Bệnh viện đến</p>
+            <p className="text-teal-600 font-semibold mb-0.5">
+              🏥 {t('adminDashboard.sosCard.hospitalTo')}
+            </p>
             <p className="font-bold text-gray-800">
               {sos.hospitalName || '—'}
             </p>
@@ -513,25 +551,26 @@ function SOSCard({ sos, onResolve }) {
             )}
           </div>
           <div className="p-3 rounded-lg bg-rose-50 border border-rose-100">
-            <p className="text-rose-600 font-semibold mb-0.5">📍 Điểm đón</p>
+            <p className="text-rose-600 font-semibold mb-0.5">
+              📍 {t('adminDashboard.sosCard.pickupPoint')}
+            </p>
             <p className="font-bold text-gray-800">
               {sos.pickupAddress || '—'}
             </p>
           </div>
           <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
-            <p className="text-amber-600 font-semibold mb-0.5">📊 Trạng thái ca</p>
+            <p className="text-amber-600 font-semibold mb-0.5">
+              📊 {t('adminDashboard.sosCard.caseStatus')}
+            </p>
             <p className="font-bold text-gray-800">
-              {{
-                picking_up: 'Đang đón BN',
-                at_hospital: 'Đã tới viện',
-                examining: 'Đang khám',
-                done_exam: 'Đã lấy thuốc',
-              }[sos.status] || sos.status}
+              {t(`common.status.${sos.status}`)}
             </p>
           </div>
           {sos.bookingStartTime && (
             <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-              <p className="text-gray-600 font-semibold mb-0.5">⏱ Đã phục vụ</p>
+              <p className="text-gray-600 font-semibold mb-0.5">
+                ⏱ {t('adminDashboard.sosCard.servedTime')}
+              </p>
               <p className="font-bold text-gray-800 font-mono">
                 {(() => {
                   const h = Math.floor(
@@ -553,7 +592,7 @@ function SOSCard({ sos, onResolve }) {
               href={`tel:${sos.patientPhone}`}
               className="flex-1 min-w-[140px] bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition text-center shadow-md shadow-teal-200"
             >
-              📞 Gọi người nhà
+              📞 {t('adminDashboard.sosCard.callFamily')}
             </a>
           )}
           {sos.nursePhone && (
@@ -561,14 +600,14 @@ function SOSCard({ sos, onResolve }) {
               href={`tel:${sos.nursePhone}`}
               className="flex-1 min-w-[140px] bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition text-center shadow-md shadow-rose-200"
             >
-              📞 Gọi y tá
+              📞 {t('adminDashboard.sosCard.callNurse')}
             </a>
           )}
           <button
             onClick={onResolve}
             className="flex-1 min-w-[140px] bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 px-4 rounded-lg transition shadow-md shadow-red-300"
           >
-            ✓ Đã xử lý
+            ✓ {t('adminDashboard.sosCard.resolvedBtn')}
           </button>
         </div>
       </div>
@@ -578,17 +617,17 @@ function SOSCard({ sos, onResolve }) {
 
 // ===== Reassign Form =====
 function ReassignForm({ booking, nurses, onSave, onCancel }) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(null);
 
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-        ⚠️ Ca hiện tại: <b>{booking.id}</b>. Đổi y tá sẽ kích hoạt thông báo
-        cho khách hàng.
+        ⚠️ {t('adminDashboard.reassignWarning', { id: booking.id })}
       </div>
 
       <p className="text-sm font-bold text-gray-700">
-        Chọn Y tá mới phụ trách:
+        {t('adminDashboard.reassignSelectLabel')}
       </p>
 
       <div className="space-y-2 max-h-80 overflow-y-auto">
@@ -620,7 +659,8 @@ function ReassignForm({ booking, nurses, onSave, onCancel }) {
                   selected === n.id ? 'text-gray-500' : 'opacity-80'
                 }`}
               >
-                {n.exp} năm KN • ⭐ {n.rating?.toFixed(1)}
+                {n.exp} {t('adminDashboard.yearsExpShort')} • ⭐{' '}
+                {n.rating?.toFixed(1)}
               </p>
             </div>
             {selected === n.id && (
@@ -635,14 +675,14 @@ function ReassignForm({ booking, nurses, onSave, onCancel }) {
           onClick={onCancel}
           className="flex-1 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition"
         >
-          Hủy
+          {t('common.cancel')}
         </button>
         <button
           onClick={() => selected && onSave(selected)}
           disabled={!selected}
           className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-lg transition disabled:opacity-50 shadow-md shadow-rose-200"
         >
-          Xác nhận đổi
+          {t('adminDashboard.reassignConfirmBtn')}
         </button>
       </div>
     </div>

@@ -1,42 +1,39 @@
 // src/components/Layout.jsx
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store/useStore';
 import Logo from './Logo';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const MENUS = {
   customer: [
-    { path: '/customer/patients', label: 'Hồ sơ người thân', icon: '👨‍👩‍👧' },
-    { path: '/customer/booking', label: 'Đặt lịch khám', icon: '📅' },
-    { path: '/customer/tracking', label: 'Theo dõi ca khám', icon: '📍' },
-    { path: '/customer/report', label: 'Báo cáo sau khám', icon: '📄' },
-    { path: '/customer/medications', label: 'Tủ thuốc', icon: '💊' },
+    { path: '/customer/patients', labelKey: 'menu.customer.patients', icon: '👨‍👩‍👧' },
+    { path: '/customer/booking', labelKey: 'menu.customer.booking', icon: '📅' },
+    { path: '/customer/tracking', labelKey: 'menu.customer.tracking', icon: '📍' },
+    { path: '/customer/report', labelKey: 'menu.customer.report', icon: '📄' },
+    { path: '/customer/medications', labelKey: 'menu.customer.medications', icon: '💊' },
   ],
   nurse: [
-    { path: '/nurse/jobs', label: 'Ca khám của tôi', icon: '📋' },
-    { path: '/nurse/schedule', label: 'Lịch rảnh', icon: '🗓️' },
-    { path: '/nurse/profile', label: 'Hồ sơ chuyên môn', icon: '👩‍⚕️' },
-    { path: '/nurse/stats', label: 'Thu nhập', icon: '💰' },
+    { path: '/nurse/jobs', labelKey: 'menu.nurse.jobs', icon: '📋' },
+    { path: '/nurse/schedule', labelKey: 'menu.nurse.schedule', icon: '🗓️' },
+    { path: '/nurse/profile', labelKey: 'menu.nurse.profile', icon: '👩‍⚕️' },
+    { path: '/nurse/stats', labelKey: 'menu.nurse.stats', icon: '💰' },
   ],
   admin: [
-    { path: '/admin/dashboard', label: 'Giám sát ca khám', icon: '📊' },
-    { path: '/admin/nurses', label: 'Quản lý Y tá', icon: '👥' },
-    { path: '/admin/reviews', label: 'Đánh giá', icon: '⭐' },
-    { path: '/admin/finance', label: 'Tài chính', icon: '💵' },
-    { path: '/admin/catalog', label: 'Danh mục', icon: '⚙️' },
+    { path: '/admin/dashboard', labelKey: 'menu.admin.dashboard', icon: '📊' },
+    { path: '/admin/nurses', labelKey: 'menu.admin.nurses', icon: '👥' },
+    { path: '/admin/reviews', labelKey: 'menu.admin.reviews', icon: '⭐' },
+    { path: '/admin/finance', labelKey: 'menu.admin.finance', icon: '💵' },
+    { path: '/admin/catalog', labelKey: 'menu.admin.catalog', icon: '⚙️' },
   ],
-};
-
-const ROLE_LABEL = {
-  customer: 'Khách hàng',
-  nurse: 'Điều dưỡng',
-  admin: 'Quản trị viên',
 };
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, resetDemo } = useStore();
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!user) return null;
@@ -49,19 +46,17 @@ export default function Layout({ children }) {
 
   const handleNavigate = (path) => {
     navigate(path);
-    setSidebarOpen(false); // Đóng sidebar sau khi chọn menu trên mobile
+    setSidebarOpen(false);
   };
 
-  // Nội dung sidebar — tách ra để tái sử dụng cho cả desktop và mobile
   const SidebarContent = () => (
     <>
-      {/* Logo — bấm về Landing */}
       <button
         onClick={() => handleNavigate('/')}
         className="p-4 border-b text-left hover:bg-gray-50 transition w-full"
       >
         <Logo size="md" />
-        <p className="text-xs text-gray-500 mt-1.5">{ROLE_LABEL[user.role]}</p>
+        <p className="text-xs text-gray-500 mt-1.5">{t(`roles.${user.role}`)}</p>
       </button>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -78,7 +73,7 @@ export default function Layout({ children }) {
               }`}
             >
               <span>{item.icon}</span>
-              <span className="text-sm">{item.label}</span>
+              <span className="text-sm">{t(item.labelKey)}</span>
             </button>
           );
         })}
@@ -89,7 +84,7 @@ export default function Layout({ children }) {
           onClick={resetDemo}
           className="w-full text-xs text-gray-500 hover:text-rose-600 py-1"
         >
-          🔄 Reset Demo
+          🔄 {t('common.resetDemo')}
         </button>
       </div>
     </>
@@ -97,46 +92,39 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* ===== SIDEBAR DESKTOP (lg trở lên) ===== */}
+      {/* SIDEBAR DESKTOP */}
       <aside className="hidden lg:flex w-64 bg-white border-r flex-col">
         <SidebarContent />
       </aside>
 
-      {/* ===== SIDEBAR MOBILE (dạng overlay) ===== */}
+      {/* SIDEBAR MOBILE */}
       {sidebarOpen && (
         <>
-          {/* Lớp phủ đen mờ */}
           <div
             onClick={() => setSidebarOpen(false)}
             className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fadeIn"
           />
-
-          {/* Sidebar trượt từ trái */}
           <aside className="fixed top-0 left-0 bottom-0 w-64 bg-white border-r flex flex-col z-50 lg:hidden shadow-2xl">
-            {/* Nút đóng */}
             <button
               onClick={() => setSidebarOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 z-10"
-              aria-label="Đóng menu"
+              aria-label={t('layout.closeMenu')}
             >
               ✕
             </button>
-
             <SidebarContent />
           </aside>
         </>
       )}
 
-      {/* ===== MAIN ===== */}
+      {/* MAIN */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <header className="bg-white border-b px-4 lg:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Nút 3 gạch — chỉ hiện trên mobile */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-700 transition"
-              aria-label="Mở menu"
+              aria-label={t('layout.openMenu')}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -155,11 +143,12 @@ export default function Layout({ children }) {
             </button>
 
             <span className="text-sm text-gray-500 hidden sm:inline">
-              Demo CareMate TP.HCM
+              {t('layout.demoTitle')}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <img
               src={user.avatar}
               alt=""
@@ -175,7 +164,7 @@ export default function Layout({ children }) {
               onClick={handleLogout}
               className="ml-2 text-xs text-rose-600 hover:underline font-semibold"
             >
-              Đăng xuất
+              {t('common.logout')}
             </button>
           </div>
         </header>

@@ -1,12 +1,13 @@
 // src/pages/customer/PatientForm.jsx
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 const EMPTY = {
   name: '',
-  relation: 'Bố',
+  relation: 'father',       // 👈 key i18n
   dob: '',
-  gender: 'Nam',
+  gender: 'male',           // 👈 key i18n
   bhyt: '',
   address: '',
   emergencyPhone: '',
@@ -15,11 +16,12 @@ const EMPTY = {
   conditions: [],
 };
 
-const RELATIONS = ['Bố', 'Mẹ', 'Ông', 'Bà', 'Vợ', 'Chồng', 'Khác'];
-const COMMON_ALLERGIES = ['Penicillin', 'Paracetamol', 'Aspirin', 'Hải sản', 'Khác'];
-const COMMON_CONDITIONS = ['Tiểu đường', 'Tăng huyết áp', 'Tim mạch', 'Hen suyễn', 'Khác'];
+const RELATIONS = ['father', 'mother', 'grandfather', 'grandmother', 'wife', 'husband', 'other'];
+const COMMON_ALLERGIES = ['penicillin', 'paracetamol', 'aspirin', 'seafood', 'other'];
+const COMMON_CONDITIONS = ['diabetes', 'hypertension', 'cardiovascular', 'asthma', 'other'];
 
 export default function PatientForm({ initial, onSubmit, onCancel }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState(EMPTY);
   const [preview, setPreview] = useState('');
   const fileRef = useRef(null);
@@ -53,11 +55,11 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Vui lòng chọn file ảnh');
+      toast.error(t('patients.formImageOnly'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Ảnh tối đa 2MB');
+      toast.error(t('patients.formImageTooBig'));
       return;
     }
 
@@ -78,9 +80,9 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return toast.error('Vui lòng nhập họ tên');
-    if (!form.dob) return toast.error('Vui lòng nhập năm sinh');
-    if (!form.address.trim()) return toast.error('Vui lòng nhập địa chỉ');
+    if (!form.name.trim()) return toast.error(t('patients.formNameRequired'));
+    if (!form.dob) return toast.error(t('patients.formDobRequired'));
+    if (!form.address.trim()) return toast.error(t('patients.formAddressRequired'));
     onSubmit(form);
   };
 
@@ -103,7 +105,7 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-gray-800 mb-2">
-            📷 Ảnh đại diện
+            📷 {t('patients.formAvatarLabel')}
           </p>
           <div className="flex gap-2">
             <button
@@ -111,7 +113,7 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
               onClick={() => fileRef.current?.click()}
               className="text-xs px-3 py-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition font-semibold shadow-sm shadow-rose-200"
             >
-              Chọn ảnh
+              {t('patients.formChooseImage')}
             </button>
             {preview && (
               <button
@@ -119,12 +121,12 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
                 onClick={handleRemoveAvatar}
                 className="text-xs px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition font-medium"
               >
-                🗑 Xóa
+                🗑 {t('patients.formRemoveImage')}
               </button>
             )}
           </div>
           <p className="text-[10px] text-gray-500 mt-1">
-            JPG/PNG, tối đa 2MB
+            {t('patients.formImageHint')}
           </p>
           <input
             ref={fileRef}
@@ -139,26 +141,25 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
       {/* ===== THÔNG TIN CƠ BẢN ===== */}
       <div className="p-4 rounded-xl bg-teal-50/50 border border-teal-100 space-y-4">
         <p className="text-sm font-bold text-teal-700 flex items-center gap-2">
-          👤 Thông tin cơ bản
+          👤 {t('patients.formBasicInfo')}
         </p>
 
-        {/* Hàng 1 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Họ và tên *
+              {t('patients.formName')} *
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
-              placeholder="Nguyễn Văn A"
+              placeholder={t('patients.formNamePlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm"
             />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Quan hệ
+              {t('patients.formRelation')}
             </label>
             <select
               value={form.relation}
@@ -166,17 +167,18 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm"
             >
               {RELATIONS.map((r) => (
-                <option key={r}>{r}</option>
+                <option key={r} value={r}>
+                  {t(`patients.relations.${r}`)}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Hàng 2 */}
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Năm sinh *
+              {t('patients.formDob')} *
             </label>
             <input
               type="text"
@@ -184,32 +186,32 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
               onChange={(e) =>
                 update('dob', e.target.value.replace(/\D/g, '').slice(0, 4))
               }
-              placeholder="1955"
+              placeholder={t('patients.formDobPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm"
             />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Giới tính
+              {t('patients.formGender')}
             </label>
             <select
               value={form.gender}
               onChange={(e) => update('gender', e.target.value)}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm"
             >
-              <option>Nam</option>
-              <option>Nữ</option>
+              <option value="male">{t('patients.formGenderMale')}</option>
+              <option value="female">{t('patients.formGenderFemale')}</option>
             </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Mã BHYT
+              {t('patients.formBhyt')}
             </label>
             <input
               type="text"
               value={form.bhyt}
               onChange={(e) => update('bhyt', e.target.value.toUpperCase())}
-              placeholder="DN123456789"
+              placeholder={t('patients.formBhytPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm"
             />
           </div>
@@ -219,25 +221,25 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
       {/* ===== ĐỊA CHỈ & LIÊN HỆ ===== */}
       <div className="p-4 rounded-xl bg-rose-50/50 border border-rose-100 space-y-4">
         <p className="text-sm font-bold text-rose-700 flex items-center gap-2">
-          📍 Địa chỉ & liên hệ
+          📍 {t('patients.formAddressSection')}
         </p>
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Địa chỉ thường trú tại TP.HCM *
+            {t('patients.formAddressLabel')} *
           </label>
           <input
             type="text"
             value={form.address}
             onChange={(e) => update('address', e.target.value)}
-            placeholder="123 Lê Lợi, Q.1, TP.HCM"
+            placeholder={t('patients.formAddressPlaceholder')}
             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none text-sm"
           />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            SĐT liên hệ khẩn cấp
+            {t('patients.formEmergencyPhone')}
           </label>
           <input
             type="tel"
@@ -248,7 +250,7 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
                 e.target.value.replace(/\D/g, '').slice(0, 10)
               )
             }
-            placeholder="0901234567"
+            placeholder={t('patients.formEmergencyPhonePlaceholder')}
             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none text-sm"
           />
         </div>
@@ -257,13 +259,12 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
       {/* ===== CẢNH BÁO Y TẾ ===== */}
       <div className="p-4 rounded-xl bg-gradient-to-br from-red-50/60 to-amber-50/60 border-2 border-dashed border-amber-200 space-y-4">
         <p className="text-sm font-bold text-red-700 flex items-center gap-2">
-          🚨 Cảnh báo y tế
+          🚨 {t('patients.formMedicalWarning')}
         </p>
 
-        {/* Dị ứng */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-2">
-            Dị ứng thuốc
+            {t('patients.formAllergies')}
           </label>
           <div className="flex flex-wrap gap-2">
             {COMMON_ALLERGIES.map((a) => {
@@ -280,17 +281,16 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
                   }`}
                 >
                   {active && '✓ '}
-                  {a}
+                  {t(`patients.allergies.${a}`)}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Bệnh lý nền */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-2">
-            Bệnh lý nền
+            {t('patients.formConditions')}
           </label>
           <div className="flex flex-wrap gap-2">
             {COMMON_CONDITIONS.map((c) => {
@@ -307,7 +307,7 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
                   }`}
                 >
                   {active && '✓ '}
-                  {c}
+                  {t(`patients.conditions.${c}`)}
                 </button>
               );
             })}
@@ -322,13 +322,13 @@ export default function PatientForm({ initial, onSubmit, onCancel }) {
           onClick={onCancel}
           className="flex-1 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition"
         >
-          Hủy
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-lg transition shadow-lg shadow-rose-200 hover:-translate-y-0.5"
         >
-          {initial ? 'Cập nhật hồ sơ' : 'Thêm người thân'}
+          {initial ? t('patients.formSubmitUpdate') : t('patients.formSubmitAdd')}
         </button>
       </div>
     </form>

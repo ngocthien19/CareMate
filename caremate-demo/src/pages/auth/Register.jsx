@@ -1,15 +1,18 @@
 // src/pages/auth/Register.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import Logo from '../../components/Logo';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 const MOCK_OTP = '123456';
 
 export default function Register() {
   const navigate = useNavigate();
   const { registerAccount } = useStore();
+  const { t } = useTranslation();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -25,19 +28,19 @@ export default function Register() {
 
   const handleContinue = () => {
     if (!name.trim()) {
-      toast.error('Vui lòng nhập họ và tên');
+      toast.error(t('auth.nameRequired'));
       return;
     }
     if (!/^0\d{9}$/.test(phone)) {
-      toast.error('SĐT phải 10 chữ số, bắt đầu bằng 0');
+      toast.error(t('auth.phoneInvalid'));
       return;
     }
     if (password.length < 6) {
-      toast.error('Mật khẩu tối thiểu 6 ký tự');
+      toast.error(t('auth.passwordMin'));
       return;
     }
     if (password !== confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp');
+      toast.error(t('auth.passwordNotMatch'));
       return;
     }
     setStep('terms');
@@ -45,20 +48,20 @@ export default function Register() {
 
   const handleAgreeTerms = () => {
     if (!agreedTerms) {
-      toast.error('Vui lòng tích đồng ý điều khoản');
+      toast.error(t('auth.termsAgreeError'));
       return;
     }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setStep('otp');
-      toast.success(`[DEMO] OTP của bạn là: ${MOCK_OTP}`, { duration: 10000 });
+      toast.success(`[DEMO] OTP: ${MOCK_OTP}`, { duration: 10000 });
     }, 800);
   };
 
   const handleVerifyOTP = () => {
     if (otp !== MOCK_OTP) {
-      toast.error('OTP không đúng. Nhập 123456');
+      toast.error(t('auth.otpInvalid'));
       return;
     }
 
@@ -82,7 +85,7 @@ export default function Register() {
         return;
       }
 
-      toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+      toast.success(t('auth.registerSuccess'));
       navigate('/login');
     }, 800);
   };
@@ -96,9 +99,9 @@ export default function Register() {
 
   const Stepper = () => {
     const steps = [
-      { key: 'form', label: 'Thông tin' },
-      { key: 'terms', label: 'Điều khoản' },
-      { key: 'otp', label: 'Xác thực OTP' },
+      { key: 'form', label: t('auth.stepperInfo') },
+      { key: 'terms', label: t('auth.stepperTerms') },
+      { key: 'otp', label: t('auth.stepperOtp') },
     ];
     const currentIdx = steps.findIndex((s) => s.key === step);
 
@@ -144,10 +147,11 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-rose-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 animate-fadeIn">
+        
         <div className="flex flex-col items-center mb-4">
           <Logo size="lg" />
           <p className="text-sm text-gray-500 mt-2">
-            Đăng ký tài khoản Khách hàng
+            {t('auth.registerSubtitle')}
           </p>
         </div>
 
@@ -158,20 +162,20 @@ export default function Register() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Họ và tên
+                {t('auth.fullName')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nguyễn Văn A"
+                placeholder={t('auth.fullNamePlaceholder')}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Số điện thoại
+                {t('auth.phone')}
               </label>
               <input
                 type="tel"
@@ -179,21 +183,21 @@ export default function Register() {
                 onChange={(e) =>
                   setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))
                 }
-                placeholder="0901234567"
+                placeholder={t('auth.phonePlaceholder')}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mật khẩu
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder={t('auth.passwordPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none pr-12"
                 />
                 <button
@@ -208,14 +212,14 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Xác nhận mật khẩu
+                {t('auth.confirmPassword')}
               </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Nhập lại mật khẩu"
+                  placeholder={t('auth.confirmPasswordPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none pr-12"
                 />
                 <button
@@ -233,7 +237,7 @@ export default function Register() {
               onClick={handleContinue}
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-rose-200"
             >
-              Tiếp tục
+              {t('auth.registerBtn')}
             </button>
           </div>
         )}
@@ -244,10 +248,10 @@ export default function Register() {
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="bg-gray-50 px-4 py-3 border-b">
                 <h3 className="font-bold text-gray-800 text-sm">
-                  ĐIỀU KHOẢN DỊCH VỤ & MIỄN TRỪ Y TẾ
+                  {t('auth.termsTitle')}
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Vui lòng cuộn đọc hết để tiếp tục
+                  {t('auth.termsScrollHint')}
                 </p>
               </div>
 
@@ -255,29 +259,29 @@ export default function Register() {
                 onScroll={handleScroll}
                 className="p-4 overflow-y-auto h-72 text-sm text-gray-700 space-y-3 leading-relaxed"
               >
-                <p><strong>1. ĐỊNH NGHĨA VÀ BẢN CHẤT DỊCH VỤ</strong></p>
-                <p>CareMate là đơn vị cung cấp dịch vụ người đồng hành chăm sóc sức khỏe cá nhân, hỗ trợ đưa đón, di chuyển và thực hiện các thủ tục hành chính y tế cho người cao tuổi, người bệnh tại các cơ sở y tế trên địa bàn TP.HCM.</p>
+                <p><strong>{t('auth.terms.s1Title')}</strong></p>
+                <p>{t('auth.terms.s1Body')}</p>
 
-                <p><strong>2. PHẠM VI ÁP DỤNG</strong></p>
-                <p>Dịch vụ chỉ áp dụng đối với các điểm đón và cơ sở y tế nằm trong phạm vi địa giới hành chính TP.HCM.</p>
+                <p><strong>{t('auth.terms.s2Title')}</strong></p>
+                <p>{t('auth.terms.s2Body')}</p>
 
-                <p><strong>3. MIỄN TRỪ TRÁCH NHIỆM Y KHOA</strong></p>
-                <p>Nhân viên CareMate không đưa ra chẩn đoán y khoa, không chỉ định điều trị, không thay đổi liều thuốc. Mọi kết luận chuyên môn thuộc thẩm quyền bác sĩ.</p>
-                <p>CareMate không chịu trách nhiệm về kết quả khám bệnh, phản ứng phụ do thuốc, hoặc can thiệp y khoa do bệnh viện thực hiện.</p>
+                <p><strong>{t('auth.terms.s3Title')}</strong></p>
+                <p>{t('auth.terms.s3Body1')}</p>
+                <p>{t('auth.terms.s3Body2')}</p>
 
-                <p><strong>4. CHI PHÍ DỊCH VỤ</strong></p>
-                <p>Gói tiêu chuẩn: 499.000 VNĐ / 4 giờ đầu tiên, tính từ thời điểm điều dưỡng có mặt đón bệnh nhân.</p>
-                <p>Phụ phí phát sinh: 120.000 VNĐ / giờ tiếp theo nếu quá 4 giờ. Dưới 15 phút miễn phí, từ 15 phút tính tròn 1 giờ.</p>
-                <p><strong>Gói KHÔNG bao gồm viện phí, xét nghiệm, chụp chiếu và tiền thuốc. Bệnh nhân tự thanh toán tại bệnh viện.</strong></p>
+                <p><strong>{t('auth.terms.s4Title')}</strong></p>
+                <p>{t('auth.terms.s4Body1')}</p>
+                <p>{t('auth.terms.s4Body2')}</p>
+                <p><strong>{t('auth.terms.s4Body3')}</strong></p>
 
-                <p><strong>5. ỦY QUYỀN & BẢO MẬT</strong></p>
-                <p>Khách hàng ủy quyền cho nhân viên CareMate đi cùng bệnh nhân, hỗ trợ thủ tục, nhận kết quả và lắng nghe hướng dẫn bác sĩ.</p>
+                <p><strong>{t('auth.terms.s5Title')}</strong></p>
+                <p>{t('auth.terms.s5Body')}</p>
 
-                <p><strong>6. ĐỔI LỊCH & HỦY DỊCH VỤ</strong></p>
-                <p>Hủy trước 12 giờ: hoàn 100% qua VNPay. Hủy dưới 12 giờ: phí 30% (150.000 VNĐ).</p>
+                <p><strong>{t('auth.terms.s6Title')}</strong></p>
+                <p>{t('auth.terms.s6Body')}</p>
 
                 <p className="text-center text-gray-400 py-3">
-                  — Bạn đã đọc đến cuối điều khoản —
+                  {t('auth.terms.endNote')}
                 </p>
               </div>
             </div>
@@ -297,13 +301,13 @@ export default function Register() {
                 className="mt-0.5 w-4 h-4 accent-teal-600"
               />
               <span className="text-sm text-gray-700">
-                Tôi đã đọc, hiểu và đồng ý với Điều khoản dịch vụ & Miễn trừ y tế của CareMate
+                {t('auth.termsCheckbox')}
               </span>
             </label>
 
             {!isReadAll && (
               <p className="text-xs text-amber-600 text-center">
-                ⚠️ Vui lòng cuộn đọc hết điều khoản để có thể tích đồng ý
+                {t('auth.termsScrollWarning')}
               </p>
             )}
 
@@ -313,7 +317,7 @@ export default function Register() {
                 onClick={() => setStep('form')}
                 className="flex-1 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
               >
-                ← Quay lại
+                ← {t('common.back')}
               </button>
               <button
                 type="button"
@@ -321,7 +325,7 @@ export default function Register() {
                 disabled={!agreedTerms || loading}
                 className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 shadow-lg shadow-rose-200"
               >
-                {loading ? 'Đang gửi OTP...' : 'Đồng ý & Tiếp tục'}
+                {loading ? t('auth.sendingOtp') : t('auth.termsAgreeBtn')}
               </button>
             </div>
           </div>
@@ -332,13 +336,13 @@ export default function Register() {
           <div className="space-y-4">
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 text-sm">
               <p className="text-gray-600">
-                Mã OTP đã gửi tới <b>{phone}</b>
+                {t('auth.otpSentTo')} <b>{phone}</b>
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mã OTP (6 chữ số)
+                {t('auth.otpLabel')}
               </label>
               <input
                 type="text"
@@ -351,7 +355,8 @@ export default function Register() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-center text-2xl tracking-widest font-mono"
               />
               <p className="text-xs text-gray-500 mt-1 text-center">
-                Demo OTP: <span className="font-bold text-teal-600">123456</span>
+                {t('auth.otpDemoHint')}{' '}
+                <span className="font-bold text-teal-600">123456</span>
               </p>
             </div>
 
@@ -361,7 +366,7 @@ export default function Register() {
               disabled={otp.length !== 6 || loading}
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 shadow-lg shadow-rose-200"
             >
-              {loading ? 'Đang xác thực...' : 'Xác nhận & Tạo tài khoản'}
+              {loading ? t('auth.otpVerifying') : t('auth.otpVerifyBtn')}
             </button>
 
             <button
@@ -372,23 +377,26 @@ export default function Register() {
               }}
               className="w-full text-sm text-gray-500 hover:text-teal-600"
             >
-              ← Quay lại
+              ← {t('common.back')}
             </button>
           </div>
         )}
 
         {step === 'form' && (
           <p className="text-sm text-center text-gray-500 mt-6">
-            Đã có tài khoản?{' '}
-            <Link to="/login" className="text-teal-600 font-semibold hover:underline">
-              Đăng nhập
+            {t('auth.hasAccount')}{' '}
+            <Link
+              to="/login"
+              className="text-teal-600 font-semibold hover:underline"
+            >
+              {t('auth.loginNow')}
             </Link>
           </p>
         )}
 
         <p className="text-xs text-gray-400 text-center mt-4">
           <Link to="/" className="hover:text-teal-600">
-            ← Về trang chủ
+            {t('auth.backHome')}
           </Link>
         </p>
       </div>

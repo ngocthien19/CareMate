@@ -1,6 +1,7 @@
 // src/pages/customer/TrackingDetail.jsx
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS, NURSES } from '../../mock';
@@ -10,18 +11,19 @@ import ChatBox from '../../components/ChatBox';
 import Modal from '../../components/Modal';
 import { calcNurseRating } from '../../utils/calcNurseRating';
 
-const STATUS_LABEL = {
-  confirmed: { label: 'Đã xác nhận', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  picking_up: { label: 'Đang đón bệnh nhân', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  at_hospital: { label: 'Đã tới viện', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  examining: { label: 'Đang khám', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  done_exam: { label: 'Đã lấy thuốc', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  completed: { label: 'Đã hoàn tất', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+const STATUS_COLOR = {
+  confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
+  picking_up: 'bg-teal-100 text-teal-700 border-teal-200',
+  at_hospital: 'bg-teal-100 text-teal-700 border-teal-200',
+  examining: 'bg-teal-100 text-teal-700 border-teal-200',
+  done_exam: 'bg-amber-100 text-amber-700 border-amber-200',
+  completed: 'bg-gray-100 text-gray-700 border-gray-200',
 };
 
 export default function TrackingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { bookings, patients, reviews } = useStore();
 
   const [chatOpen, setChatOpen] = useState(false);
@@ -32,12 +34,12 @@ export default function TrackingDetail() {
   if (!booking) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Không tìm thấy ca khám</p>
+        <p className="text-gray-500">{t('tracking.detail.notFound')}</p>
         <button
           onClick={() => navigate('/customer/tracking')}
           className="text-teal-600 font-semibold mt-3 hover:underline"
         >
-          ← Quay lại danh sách
+          ← {t('tracking.detail.backToList')}
         </button>
       </div>
     );
@@ -46,7 +48,8 @@ export default function TrackingDetail() {
   const patient = patients.find((p) => p.id === booking.patientId);
   const hospital = HOSPITALS.find((h) => h.id === booking.hospitalId);
   const nurse = NURSES.find((n) => n.id === booking.nurseId);
-  const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.confirmed;
+  const statusColor = STATUS_COLOR[booking.status] || STATUS_COLOR.confirmed;
+  const statusLabel = t(`common.status.${booking.status}`);
 
   const hospitalName = booking.hospitalName || hospital?.name || '—';
 
@@ -57,10 +60,10 @@ export default function TrackingDetail() {
         onClick={() => navigate('/customer/tracking')}
         className="text-sm text-gray-500 hover:text-teal-600 transition flex items-center gap-1"
       >
-        ← Danh sách ca khám
+        ← {t('tracking.breadcrumb')}
       </button>
 
-      {/* Header — nền TEAL đơn sắc */}
+      {/* Header */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-400/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-2xl" />
@@ -70,20 +73,20 @@ export default function TrackingDetail() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Đang theo dõi
+                {t('tracking.detail.badge')}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">
-              Ca khám {booking.id}
+              {t('tracking.detail.title', { id: booking.id })}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
               🏥 {hospitalName} • 🩺 {booking.specialty}
             </p>
           </div>
           <span
-            className={`text-xs px-3 py-1.5 rounded-full border-2 font-bold ${statusInfo.color}`}
+            className={`text-xs px-3 py-1.5 rounded-full border-2 font-bold ${statusColor}`}
           >
-            {statusInfo.label}
+            {statusLabel}
           </span>
         </div>
       </div>
@@ -100,7 +103,7 @@ export default function TrackingDetail() {
 
         <div className="bg-white rounded-2xl border-2 border-gray-200 p-4 shadow-sm">
           <p className="text-xs text-gray-500 mb-3 font-semibold">
-            👩‍⚕️ Y tá phụ trách
+            👩‍⚕️ {t('tracking.detail.nurseTitle')}
           </p>
           <div className="flex items-center gap-3">
             <img
@@ -120,7 +123,10 @@ export default function TrackingDetail() {
                 );
                 return (
                   <p className="text-xs text-gray-500">
-                    ⭐ {rating.toFixed(1)} • {nurse?.exp} năm
+                    {t('tracking.detail.nurseRatingExp', {
+                      rating: rating.toFixed(1),
+                      exp: nurse?.exp,
+                    })}
                   </p>
                 );
               })()}
@@ -131,13 +137,13 @@ export default function TrackingDetail() {
               onClick={() => setCallOpen(true)}
               className="flex-1 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition shadow-md shadow-rose-200"
             >
-              📞 Gọi
+              📞 {t('tracking.detail.callBtn')}
             </button>
             <button
               onClick={() => setChatOpen(true)}
               className="flex-1 py-2 rounded-lg border-2 border-teal-500 text-teal-600 hover:bg-teal-50 text-xs font-bold transition"
             >
-              💬 Nhắn
+              💬 {t('tracking.detail.chatBtn')}
             </button>
           </div>
         </div>
@@ -147,10 +153,10 @@ export default function TrackingDetail() {
       {!booking.startTime && booking.status !== 'completed' && (
         <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-5 text-center">
           <p className="text-sm text-teal-700 font-bold">
-            ⏳ Đang chờ y tá bắt đầu ca khám
+            ⏳ {t('tracking.detail.waitingTitle')}
           </p>
           <p className="text-xs text-teal-600 mt-1">
-            Y tá sẽ bấm "Đã đón bệnh nhân" khi tới điểm hẹn
+            {t('tracking.detail.waitingDesc')}
           </p>
         </div>
       )}
@@ -158,7 +164,7 @@ export default function TrackingDetail() {
       {/* Timeline */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
         <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          🚦 Tiến trình ca khám (5 bước)
+          🚦 {t('tracking.detail.timelineTitle')}
         </h2>
         <Timeline
           currentStatus={booking.status}
@@ -169,21 +175,41 @@ export default function TrackingDetail() {
       {/* Thông tin ca khám */}
       <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-sm">
         <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          📋 Thông tin ca khám
+          📋 {t('tracking.detail.infoTitle')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           {[
-            { label: 'Người bệnh', value: patient?.name, color: 'teal' },
-            { label: 'Bệnh viện', value: hospitalName, color: 'teal' },
-            { label: 'Chuyên khoa', value: booking.specialty, color: 'rose' },
-            { label: 'Ngày khám', value: booking.date, color: 'rose' },
-            { label: 'Giờ đón', value: booking.pickupTime, color: 'amber' },
             {
-              label: 'Điểm đón',
+              label: t('tracking.detail.labelPatient'),
+              value: patient?.name,
+              color: 'teal',
+            },
+            {
+              label: t('tracking.detail.labelHospital'),
+              value: hospitalName,
+              color: 'teal',
+            },
+            {
+              label: t('tracking.detail.labelSpecialty'),
+              value: booking.specialty,
+              color: 'rose',
+            },
+            {
+              label: t('tracking.detail.labelDate'),
+              value: booking.date,
+              color: 'rose',
+            },
+            {
+              label: t('tracking.detail.labelPickupTime'),
+              value: booking.pickupTime,
+              color: 'amber',
+            },
+            {
+              label: t('tracking.detail.labelPickupPoint'),
               value:
                 booking.pickupType === 'home'
                   ? `${booking.address}, ${booking.district}`
-                  : 'Cổng bệnh viện',
+                  : t('tracking.detail.pickupHospitalGate'),
               color: 'amber',
             },
           ].map((row) => {
@@ -211,10 +237,17 @@ export default function TrackingDetail() {
         {patient?.allergies?.length > 0 && (
           <div className="mt-4 bg-red-50 border-2 border-red-200 rounded-xl p-4">
             <p className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
-              🚨 Lưu ý dị ứng
+              🚨 {t('tracking.detail.allergyTitle')}
             </p>
             <p className="text-sm text-red-700 font-medium">
-              Bệnh nhân dị ứng: <b>{patient.allergies.join(', ')}</b>
+              {t('tracking.detail.allergyDesc')}{' '}
+              <b>
+                {patient.allergies
+                  .map((a) =>
+                    t(`patients.allergies.${a}`, { defaultValue: a })
+                  )
+                  .join(', ')}
+              </b>
             </p>
           </div>
         )}
@@ -225,13 +258,13 @@ export default function TrackingDetail() {
         <div className="bg-teal-50 border-2 border-teal-300 rounded-2xl p-6 text-center shadow-sm">
           <div className="text-4xl mb-2">✅</div>
           <p className="text-base font-bold text-teal-700 mb-4">
-            Ca khám đã hoàn tất!
+            {t('tracking.detail.completedTitle')}
           </p>
           <button
             onClick={() => navigate(`/customer/patients/${booking.patientId}`)}
             className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-rose-200 hover:-translate-y-0.5"
           >
-            📋 Xem bệnh án cập nhật
+            📋 {t('tracking.detail.viewEhrBtn')}
           </button>
         </div>
       )}
@@ -240,7 +273,7 @@ export default function TrackingDetail() {
       <Modal
         open={chatOpen}
         onClose={() => setChatOpen(false)}
-        title="Trò chuyện với Y tá"
+        title={t('tracking.detail.chatModalTitle')}
         maxWidth="max-w-md"
       >
         <ChatBox nurseName={nurse?.name} nurseAvatar={nurse?.avatar} />
@@ -250,7 +283,7 @@ export default function TrackingDetail() {
       <Modal
         open={callOpen}
         onClose={() => setCallOpen(false)}
-        title="Gọi Y tá"
+        title={t('tracking.detail.callModalTitle')}
         maxWidth="max-w-sm"
       >
         <div className="text-center py-4 space-y-4">
@@ -261,23 +294,25 @@ export default function TrackingDetail() {
           />
           <div>
             <p className="font-bold text-gray-800 text-lg">{nurse?.name}</p>
-            <p className="text-sm text-gray-500">Đang gọi...</p>
+            <p className="text-sm text-gray-500">
+              {t('tracking.detail.callInProgress')}
+            </p>
           </div>
           <div className="flex justify-center gap-3">
             <button
               onClick={() => {
-                toast.success('Đã kết nối cuộc gọi (demo)');
+                toast.success(t('tracking.detail.callConnected'));
                 setCallOpen(false);
               }}
               className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-2.5 rounded-full transition shadow-md shadow-rose-200"
             >
-              📞 Gọi ngay
+              📞 {t('tracking.detail.callNowBtn')}
             </button>
             <button
               onClick={() => setCallOpen(false)}
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-6 py-2.5 rounded-full transition"
             >
-              ✕ Đóng
+              ✕ {t('tracking.detail.closeBtn')}
             </button>
           </div>
         </div>

@@ -1,30 +1,31 @@
 // src/pages/customer/Tracking.jsx
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS, NURSES } from '../../mock';
 
-// Trạng thái hiển thị
-const STATUS_LABEL = {
-  confirmed: { label: 'Đã xác nhận', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  picking_up: { label: 'Đang đón bệnh nhân', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  at_hospital: { label: 'Đã tới viện', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  examining: { label: 'Đang khám', color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  done_exam: { label: 'Đã lấy thuốc', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  completed: { label: 'Đã hoàn tất', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+// Chỉ giữ color — label sẽ dùng t('common.status.*')
+const STATUS_COLOR = {
+  confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
+  picking_up: 'bg-teal-100 text-teal-700 border-teal-200',
+  at_hospital: 'bg-teal-100 text-teal-700 border-teal-200',
+  examining: 'bg-teal-100 text-teal-700 border-teal-200',
+  done_exam: 'bg-amber-100 text-amber-700 border-amber-200',
+  completed: 'bg-gray-100 text-gray-700 border-gray-200',
 };
-
-const TABS = [
-  { key: 'active', label: 'Đang diễn ra' },
-  { key: 'completed', label: 'Đã hoàn tất' },
-];
 
 export default function Tracking() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { bookings, patients } = useStore();
   const [tab, setTab] = useState('active');
 
-  // Phân loại ca
+  const TABS = [
+    { key: 'active', labelKey: 'tracking.tabActive' },
+    { key: 'completed', labelKey: 'tracking.tabCompleted' },
+  ];
+
   const filtered = useMemo(() => {
     const sorted = [...bookings].sort(
       (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
@@ -42,7 +43,7 @@ export default function Tracking() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      {/* Header — nền TEAL đơn sắc */}
+      {/* Header */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -51,34 +52,34 @@ export default function Tracking() {
           <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
             <span className="text-[10px] font-semibold text-white">
-              Theo dõi realtime
+              {t('tracking.headerBadge')}
             </span>
           </div>
           <h1 className="text-2xl font-bold text-white">
-            📍 Theo dõi ca khám
+            📍 {t('tracking.headerTitle')}
           </h1>
           <p className="text-sm text-teal-50 mt-1">
-            Danh sách các ca khám của người thân
+            {t('tracking.headerSubtitle')}
           </p>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="bg-white rounded-xl border border-gray-200 p-1.5 inline-flex shadow-sm">
-        {TABS.map((t) => {
-          const count = t.key === 'active' ? counts.active : counts.done;
-          const active = tab === t.key;
+        {TABS.map((tabItem) => {
+          const count = tabItem.key === 'active' ? counts.active : counts.done;
+          const active = tab === tabItem.key;
           return (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
+              key={tabItem.key}
+              onClick={() => setTab(tabItem.key)}
               className={`px-5 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 ${
                 active
                   ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
                   : 'text-gray-600 hover:bg-rose-50 hover:text-rose-600'
               }`}
             >
-              {t.label}
+              {t(tabItem.labelKey)}
               <span
                 className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                   active ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-600'
@@ -97,15 +98,15 @@ export default function Tracking() {
           <div className="text-5xl mb-3">📋</div>
           <p className="text-gray-600 mb-4">
             {tab === 'active'
-              ? 'Chưa có ca khám nào đang diễn ra'
-              : 'Chưa có ca khám nào hoàn tất'}
+              ? t('tracking.emptyActive')
+              : t('tracking.emptyCompleted')}
           </p>
           {tab === 'active' && (
             <button
               onClick={() => navigate('/customer/booking')}
               className="bg-rose-500 hover:bg-rose-600 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow-md shadow-rose-200 hover:-translate-y-0.5"
             >
-              + Đặt lịch khám
+              + {t('tracking.bookNowBtn')}
             </button>
           )}
         </div>
@@ -129,11 +130,14 @@ export default function Tracking() {
 
 // ===== CARD CA KHÁM =====
 function BookingCard({ booking, patient, nurse, hospital, onClick }) {
-  const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.confirmed;
+  const { t } = useTranslation();
+  const statusColor =
+    STATUS_COLOR[booking.status] || STATUS_COLOR.confirmed;
+  const statusLabel = t(`common.status.${booking.status}`);
   const isCompleted = booking.status === 'completed';
 
   const hospitalName = booking.hospitalName || hospital?.name || '—';
-  
+
   const duration = (() => {
     if (!booking.startTime) return null;
     const end = booking.endTime || Date.now();
@@ -149,25 +153,39 @@ function BookingCard({ booking, patient, nurse, hospital, onClick }) {
     return (end - booking.startTime) / 3600000 > 4;
   })();
 
+  const relationLabel = patient?.relation
+    ? t(`patients.relations.${patient.relation}`, {
+        defaultValue: patient.relation,
+      })
+    : '';
+  const genderLabel = patient?.gender
+    ? patient.gender === 'male'
+      ? t('patients.formGenderMale')
+      : patient.gender === 'female'
+      ? t('patients.formGenderFemale')
+      : patient.gender
+    : '';
+
   return (
     <button
       onClick={onClick}
       className="relative bg-white rounded-2xl border-2 border-gray-200 p-5 text-left hover:border-rose-300 hover:shadow-xl hover:shadow-rose-100 hover:-translate-y-1 transition-all duration-300 group overflow-hidden"
     >
-      {/* Vệt màu trái TEAL */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 group-hover:w-1.5 transition-all" />
 
       <div className="pl-2">
         {/* Header: mã đơn + status */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
-            <p className="text-xs text-gray-400">Mã đơn</p>
+            <p className="text-xs text-gray-400">
+              {t('tracking.orderId')}
+            </p>
             <p className="text-sm font-bold text-teal-700">{booking.id}</p>
           </div>
           <span
-            className={`text-[10px] px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusInfo.color}`}
+            className={`text-[10px] px-2 py-1 rounded-full border-2 font-semibold whitespace-nowrap ${statusColor}`}
           >
-            {statusInfo.label}
+            {statusLabel}
           </span>
         </div>
 
@@ -189,7 +207,11 @@ function BookingCard({ booking, patient, nurse, hospital, onClick }) {
               {patient?.name}
             </p>
             <p className="text-xs text-gray-500">
-              {patient?.relation} • {patient?.gender} • {patient?.dob}
+              {t('tracking.patientRelationGender', {
+                relation: relationLabel,
+                gender: genderLabel,
+                dob: patient?.dob,
+              })}
             </p>
           </div>
         </div>
@@ -241,14 +263,14 @@ function BookingCard({ booking, patient, nurse, hospital, onClick }) {
 
           {!duration && (
             <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-1 rounded-full font-medium">
-              Chờ bắt đầu
+              {t('tracking.waitingStart')}
             </span>
           )}
         </div>
 
         {/* CTA hint */}
         <p className="text-xs text-rose-500 font-bold mt-3 group-hover:underline">
-          Xem chi tiết →
+          {t('tracking.viewDetail')} →
         </p>
       </div>
     </button>

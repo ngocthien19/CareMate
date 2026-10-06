@@ -1,6 +1,6 @@
 // src/utils/calcOvertimeFee.js
 
-export const BASE_PRICE = 499000;
+export const BASE_PRICE = 899000;
 export const OVERTIME_RATE_PER_HOUR = 120000;
 export const OVERTIME_RATE_PER_MINUTE = 2000; // 👈 1 phút = 2k
 export const LIMIT_HOURS = 4;

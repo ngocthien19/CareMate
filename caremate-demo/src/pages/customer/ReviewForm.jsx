@@ -1,24 +1,13 @@
 // src/pages/customer/ReviewForm.jsx
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 
-const POSITIVE_TAGS = [
-  'Đúng giờ',
-  'Ân cần, chu đáo',
-  'Thao tác chuyên nghiệp',
-  'Giao tiếp lịch sự',
-  'Báo cáo chi tiết',
-];
+// Đổi sang key i18n
+const POSITIVE_TAGS = ['onTime', 'caring', 'professional', 'polite', 'detailedReport'];
+const NEGATIVE_TAGS = ['late', 'badAttitude', 'confused', 'blurryReport'];
 
-const NEGATIVE_TAGS = [
-  'Đến trễ',
-  'Thái độ chưa tốt',
-  'Lúng túng thủ tục',
-  'Báo cáo chụp mờ',
-];
-
-// ===== SVG Ngôi sao =====
 function StarIcon({ filled, size = 44 }) {
   return (
     <svg
@@ -43,6 +32,7 @@ function StarIcon({ filled, size = 44 }) {
 }
 
 export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
+  const { t } = useTranslation();
   const { addReview } = useStore();
   const [stars, setStars] = useState(0);
   const [hoverStars, setHoverStars] = useState(0);
@@ -50,19 +40,19 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
   const [comment, setComment] = useState('');
   const [anonymous, setAnonymous] = useState(false);
 
-  const toggleTag = (t) => {
+  const toggleTag = (tag) => {
     setTags((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+      prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]
     );
   };
 
   const handleSubmit = () => {
     if (stars === 0) {
-      toast.error('Vui lòng chọn số sao');
+      toast.error(t('review.errorStars'));
       return;
     }
     if (comment.length > 500) {
-      toast.error('Nhận xét tối đa 500 ký tự');
+      toast.error(t('review.errorCommentLength'));
       return;
     }
 
@@ -78,21 +68,23 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
       createdAt: new Date().toISOString(),
     });
 
-    toast.success('Cảm ơn bạn đã gửi đánh giá!');
+    toast.success(t('review.submitSuccess'));
     onSubmitted?.();
   };
 
-  // Chọn tag theo số sao
   const availableTags =
     stars >= 4 ? POSITIVE_TAGS : stars > 0 ? NEGATIVE_TAGS : [];
   const displayStars = hoverStars || stars;
+
+  const feedbackKey =
+    stars > 0 ? `review.feedback${stars}` : null;
 
   return (
     <div className="space-y-5">
       {/* ===== Ngôi sao ===== */}
       <div className="text-center">
         <p className="text-sm text-gray-600 mb-4">
-          Bạn đánh giá y tá thế nào?
+          {t('review.starsQuestion')}
         </p>
         <div
           className="flex justify-center gap-2"
@@ -110,25 +102,21 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
                 className={`transition-all duration-150 ${
                   isFilled ? 'scale-110' : 'scale-100'
                 } ${isHover ? 'scale-125' : ''} hover:scale-125 cursor-pointer`}
-                aria-label={`Chọn ${s} sao`}
+                aria-label={t('review.starAria', { num: s })}
               >
                 <StarIcon filled={isFilled} size={44} />
               </button>
             );
           })}
         </div>
-        {stars > 0 && (
+        {stars > 0 && feedbackKey && (
           <p className="text-sm font-semibold mt-3 text-teal-700">
-            {stars === 5 && '⭐ Tuyệt vời!'}
-            {stars === 4 && '👍 Rất tốt!'}
-            {stars === 3 && '😐 Bình thường'}
-            {stars === 2 && '😕 Chưa hài lòng'}
-            {stars === 1 && '😞 Rất không hài lòng'}
+            {t(feedbackKey)}
           </p>
         )}
         {stars === 0 && (
           <p className="text-xs text-gray-400 mt-3 italic">
-            Bấm vào ngôi sao để đánh giá
+            {t('review.starHint')}
           </p>
         )}
       </div>
@@ -137,16 +125,17 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
       {availableTags.length > 0 && (
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-2">
-            Điều gì đáng chú ý?
+            {t('review.tagsQuestion')}
           </p>
           <div className="flex flex-wrap gap-2">
-            {availableTags.map((t) => {
-              const active = tags.includes(t);
+            {availableTags.map((tagKey) => {
+              const active = tags.includes(tagKey);
+              const tagGroup = stars >= 4 ? 'tagsPositive' : 'tagsNegative';
               return (
                 <button
-                  key={t}
+                  key={tagKey}
                   type="button"
-                  onClick={() => toggleTag(t)}
+                  onClick={() => toggleTag(tagKey)}
                   className={`text-xs px-3 py-1.5 rounded-full border-2 transition font-medium ${
                     active
                       ? stars >= 4
@@ -156,7 +145,7 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
                   }`}
                 >
                   {active && '✓ '}
-                  {t}
+                  {t(`review.${tagGroup}.${tagKey}`)}
                 </button>
               );
             })}
@@ -167,12 +156,12 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
       {/* ===== Comment ===== */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Nhận xét của bạn
+          {t('review.commentLabel')}
         </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value.slice(0, 500))}
-          placeholder="Chia sẻ trải nghiệm của bạn về y tá..."
+          placeholder={t('review.commentPlaceholder')}
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm resize-none"
         />
@@ -190,7 +179,7 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
           className="w-4 h-4 accent-teal-600"
         />
         <span className="text-sm text-gray-600">
-          Ẩn danh tính khi hiển thị công khai
+          {t('review.anonymousLabel')}
         </span>
       </label>
 
@@ -201,7 +190,7 @@ export default function ReviewForm({ bookingId, nurseId, onSubmitted }) {
         disabled={stars === 0}
         className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Gửi đánh giá
+        {t('review.submitBtn')}
       </button>
     </div>
   );

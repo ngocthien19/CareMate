@@ -1,11 +1,13 @@
 // src/pages/customer/ReportList.jsx
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../../store/useStore';
 import { HOSPITALS, NURSES } from '../../mock';
 import { calcOvertimeFee } from '../../utils/calcOvertimeFee';
 
 export default function ReportList() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { bookings, patients } = useStore();
 
   const completed = bookings
@@ -14,7 +16,7 @@ export default function ReportList() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
-      {/* Header — nền TEAL đơn sắc */}
+      {/* Header */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -24,18 +26,18 @@ export default function ReportList() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Sổ khám bệnh
+                {t('report.headerBadge')}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">
-              📄 Báo cáo sau khám
+              📄 {t('report.headerTitle')}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              Xem lại toàn bộ kết quả các ca khám đã hoàn tất
+              {t('report.headerSubtitle')}
             </p>
           </div>
           <span className="text-xs bg-white/20 text-white border border-white/30 px-3 py-1.5 rounded-full font-bold">
-            {completed.length} ca
+            {t('report.visitCount', { count: completed.length })}
           </span>
         </div>
       </div>
@@ -43,12 +45,12 @@ export default function ReportList() {
       {completed.length === 0 ? (
         <div className="bg-teal-50 rounded-2xl p-12 text-center border-2 border-dashed border-teal-200">
           <div className="text-5xl mb-3">📄</div>
-          <p className="text-gray-600 mb-4">Chưa có ca khám nào hoàn tất</p>
+          <p className="text-gray-600 mb-4">{t('report.emptyTitle')}</p>
           <button
             onClick={() => navigate('/customer/tracking')}
             className="bg-rose-500 hover:bg-rose-600 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow-md shadow-rose-200 hover:-translate-y-0.5"
           >
-            Xem ca đang diễn ra →
+            {t('report.emptyCta')} →
           </button>
         </div>
       ) : (
@@ -69,7 +71,6 @@ export default function ReportList() {
                 onClick={() => navigate(`/customer/report/${booking.id}`)}
                 className="relative w-full bg-white rounded-2xl border-2 border-gray-200 p-5 text-left hover:border-rose-300 hover:shadow-xl hover:shadow-rose-100 hover:-translate-y-0.5 transition-all duration-300 group overflow-hidden"
               >
-                {/* Vệt màu trái TEAL */}
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 group-hover:w-1.5 transition-all" />
 
                 <div className="pl-2">
@@ -99,11 +100,14 @@ export default function ReportList() {
 
                         {info.isOvertime ? (
                           <span className="text-[10px] bg-orange-100 text-orange-700 border border-orange-300 px-2 py-1 rounded-full font-semibold whitespace-nowrap">
-                            ⚠️ Có phụ phí +{info.formattedFee}đ
+                            ⚠️{' '}
+                            {t('report.hasOvertime', {
+                              fee: info.formattedFee,
+                            })}
                           </span>
                         ) : (
                           <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-1 rounded-full font-semibold whitespace-nowrap">
-                            ✓ Trong gói
+                            ✓ {t('report.inPackage')}
                           </span>
                         )}
                       </div>
@@ -132,7 +136,7 @@ export default function ReportList() {
                   </div>
 
                   <p className="text-xs text-rose-500 font-bold mt-3 group-hover:underline">
-                    Xem chi tiết báo cáo →
+                    {t('report.viewDetail')} →
                   </p>
                 </div>
               </button>

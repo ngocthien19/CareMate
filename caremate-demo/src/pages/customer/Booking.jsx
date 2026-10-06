@@ -1,6 +1,7 @@
 // src/pages/customer/Booking.jsx
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import {
@@ -12,20 +13,11 @@ import NurseProfileModal from '../../components/NurseProfileModal';
 import VNPayMock from '../../components/VNPayMock';
 import { calcNurseRating } from '../../utils/calcNurseRating';
 
-// ===== HẰNG SỐ =====
 const BASE_PRICE = 899000;
-
-// ===== STEPPER =====
-const STEPS = [
-  { key: 1, label: 'Bệnh viện\n& Chuyên khoa' },
-  { key: 2, label: 'Thời gian\n& Điểm đón' },
-  { key: 3, label: 'Gói\ndịch vụ' },
-  { key: 4, label: 'Chọn\nY tá' },
-  { key: 5, label: 'Ủy quyền\n& Thanh toán' },
-];
 
 export default function Booking() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     patients,
     addBooking,
@@ -46,10 +38,19 @@ export default function Booking() {
   const HOSPITALS = customHospitals || MOCK_HOSPITALS;
   const SPECIALTIES = customSpecialties || MOCK_SPECIALTIES;
 
+  // Steps dịch theo ngôn ngữ
+  const STEPS = [
+    { key: 1, label: t('booking.steps.step1') },
+    { key: 2, label: t('booking.steps.step2') },
+    { key: 3, label: t('booking.steps.step3') },
+    { key: 4, label: t('booking.steps.step4') },
+    { key: 5, label: t('booking.steps.step5') },
+  ];
+
   const [form, setForm] = useState({
     patientId: patients[0]?.id || null,
     hospitalId: null,
-    customHospitalName: '',      // 👈 Bệnh viện tự nhập
+    customHospitalName: '',
     specialty: null,
     date: '',
     time: '',
@@ -63,7 +64,7 @@ export default function Booking() {
   useEffect(() => {
     if (rebookDraft) {
       setForm((f) => ({ ...f, ...rebookDraft }));
-      toast.success('Đã điền lại thông tin lịch cũ');
+      toast.success(t('booking.rebookDraftFilled'));
       clearRebookDraft();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,20 +73,20 @@ export default function Booking() {
   useEffect(() => {
     if (form.nurseId && lockedNurses.includes(form.nurseId)) {
       setForm((f) => ({ ...f, nurseId: null }));
-      toast.error('Y tá bạn chọn đã bị khóa, vui lòng chọn lại');
+      toast.error(t('booking.errorNurseLocked'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lockedNurses]);
 
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  // 👇 Hỗ trợ bệnh viện custom
   const selectedHospital =
     form.hospitalId === 'other'
       ? {
           id: 'other',
-          name: form.customHospitalName || 'Bệnh viện khác',
-          address: 'Địa chỉ do khách hàng cung cấp',
+          name:
+            form.customHospitalName || t('booking.otherHospitalDefault'),
+          address: t('booking.otherHospitalAddress'),
         }
       : HOSPITALS.find((h) => h.id === form.hospitalId);
 
@@ -104,7 +105,6 @@ export default function Booking() {
 
   const canNext = () => {
     if (step === 1) {
-      // Nếu chọn "Khác" → cần tên BV có nội dung
       const hasHospital =
         form.hospitalId === 'other'
           ? form.customHospitalName.trim().length > 0
@@ -124,7 +124,7 @@ export default function Booking() {
 
   const handleNext = () => {
     if (!canNext()) {
-      toast.error('Vui lòng hoàn thành thông tin bước này');
+      toast.error(t('booking.errorIncomplete'));
       return;
     }
     setStep((s) => Math.min(s + 1, 5));
@@ -134,7 +134,7 @@ export default function Booking() {
 
   const handlePay = () => {
     if (!form.agreed) {
-      toast.error('Vui lòng tích ủy quyền làm thủ tục');
+      toast.error(t('booking.errorAgreement'));
       return;
     }
     setPaying(true);
@@ -150,7 +150,6 @@ export default function Booking() {
       patientName: patient?.name,
       nurseId: form.nurseId,
       hospitalId: form.hospitalId,
-      // 👇 Lưu tên BV custom nếu chọn "Khác"
       hospitalName:
         form.hospitalId === 'other'
           ? form.customHospitalName.trim()
@@ -186,13 +185,13 @@ export default function Booking() {
     addBooking(newBooking);
     addTransaction(newTransaction);
     setPaying(false);
-    toast.success('Đặt lịch thành công!');
+    toast.success(t('booking.bookingSuccess'));
     navigate(`/customer/booking/success/${bookingId}`);
   };
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Header — nền TEAL đơn sắc */}
+      {/* Header */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg mb-6">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -201,14 +200,14 @@ export default function Booking() {
           <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
             <span className="text-[10px] font-semibold text-white">
-              Đặt lịch đồng hành
+              {t('booking.headerBadge')}
             </span>
           </div>
           <h1 className="text-2xl font-bold text-white">
-            📅 Đặt lịch khám
+            📅 {t('booking.headerTitle')}
           </h1>
           <p className="text-sm text-teal-50 mt-1">
-            Đồng hành cùng cha mẹ tại bệnh viện TP.HCM
+            {t('booking.headerSubtitle')}
           </p>
         </div>
       </div>
@@ -265,17 +264,17 @@ export default function Booking() {
           <div className="space-y-6 animate-fadeIn">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">
-                Bước 1: Chọn bệnh viện & chuyên khoa
+                {t('booking.step1Title')}
               </h2>
               <p className="text-sm text-gray-500">
-                Chỉ hỗ trợ các bệnh viện trong địa giới TP.HCM
+                {t('booking.step1Subtitle')}
               </p>
             </div>
 
             {/* Người bệnh */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Người bệnh
+                {t('booking.patientLabel')}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {patients.map((p) => (
@@ -305,13 +304,27 @@ export default function Booking() {
                           {p.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {p.relation} • {p.gender} • {p.dob}
+                          {t(`patients.relations.${p.relation}`, {
+                            defaultValue: p.relation,
+                          })}{' '}
+                          •{' '}
+                          {p.gender === 'male'
+                            ? t('patients.formGenderMale')
+                            : p.gender === 'female'
+                            ? t('patients.formGenderFemale')
+                            : p.gender}{' '}
+                          • {p.dob}
                         </p>
                       </div>
                     </div>
                     {p.allergies?.length > 0 && (
                       <p className="text-[10px] text-red-600 mt-2">
-                        🚨 Dị ứng: {p.allergies.join(', ')}
+                        🚨 {t('booking.allergyPrefix')}{' '}
+                        {p.allergies
+                          .map((a) =>
+                            t(`patients.allergies.${a}`, { defaultValue: a })
+                          )
+                          .join(', ')}
                       </p>
                     )}
                   </button>
@@ -322,7 +335,7 @@ export default function Booking() {
             {/* Bệnh viện */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Bệnh viện tại TP.HCM
+                {t('booking.hospitalLabel')}
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {HOSPITALS.map((h) => (
@@ -344,7 +357,7 @@ export default function Booking() {
                   </button>
                 ))}
 
-                {/* 👇 Nút "Khác" — bệnh viện tự nhập */}
+                {/* Nút "Khác" */}
                 <button
                   onClick={() => update('hospitalId', 'other')}
                   className={`p-3 rounded-lg border-2 border-dashed text-left transition ${
@@ -354,34 +367,32 @@ export default function Booking() {
                   }`}
                 >
                   <p className="font-semibold text-sm text-teal-700 flex items-center gap-2">
-                    ➕ Khác (Nhập tên bệnh viện)
+                    ➕ {t('booking.hospitalOtherTitle')}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Bệnh viện/phòng khám khác tại TP.HCM
+                    {t('booking.hospitalOtherDesc')}
                   </p>
                 </button>
               </div>
 
-              {/* 👇 Input nhập tên BV khi chọn "Khác" */}
               {form.hospitalId === 'other' && (
                 <div className="mt-3 p-4 rounded-xl bg-teal-50 border-2 border-teal-200 animate-fadeIn">
                   <label className="block text-sm font-bold text-teal-700 mb-2">
-                    Tên bệnh viện / phòng khám *
+                    {t('booking.hospitalOtherInputLabel')} *
                   </label>
                   <input
                     type="text"
                     value={form.customHospitalName}
-                    onChange={(e) => update('customHospitalName', e.target.value)}
-                    placeholder="VD: BV Quân Y 175, BV Nhi Đồng 2, PK Đa khoa Hồng Đức..."
+                    onChange={(e) =>
+                      update('customHospitalName', e.target.value)
+                    }
+                    placeholder={t('booking.hospitalOtherPlaceholder')}
                     autoFocus
                     className="w-full px-4 py-3 bg-white border-2 border-teal-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
                   />
                   <p className="text-xs text-teal-600 mt-2 flex items-start gap-1">
                     <span>💡</span>
-                    <span>
-                      Vui lòng nhập tên bệnh viện có địa chỉ tại TP.HCM. Y tá sẽ
-                      liên hệ xác nhận địa chỉ chính xác trước giờ đón.
-                    </span>
+                    <span>{t('booking.hospitalOtherHint')}</span>
                   </p>
                 </div>
               )}
@@ -390,7 +401,7 @@ export default function Booking() {
             {/* Chuyên khoa */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Chuyên khoa cần khám
+                {t('booking.specialtyLabel')}
               </label>
               <div className="flex flex-wrap gap-2">
                 {SPECIALTIES.map((s) => (
@@ -416,17 +427,16 @@ export default function Booking() {
           <div className="space-y-6 animate-fadeIn">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">
-                Bước 2: Chọn thời gian & điểm đón
+                {t('booking.step2Title')}
               </h2>
               <p className="text-sm text-gray-500">
-                Đặt trước tối thiểu 12 giờ
+                {t('booking.step2Subtitle')}
               </p>
             </div>
 
-            {/* Ngày */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Ngày khám
+                {t('booking.dateLabel')}
               </label>
               <input
                 type="date"
@@ -437,32 +447,30 @@ export default function Booking() {
               />
             </div>
 
-            {/* Giờ */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Khung giờ đón
+                {t('booking.timeSlotLabel')}
               </label>
               <div className="grid grid-cols-5 gap-2">
-                {TIME_SLOTS.map((t) => (
+                {TIME_SLOTS.map((slot) => (
                   <button
-                    key={t}
-                    onClick={() => update('time', t)}
+                    key={slot}
+                    onClick={() => update('time', slot)}
                     className={`py-2 rounded-lg text-sm font-medium border-2 transition ${
-                      form.time === t
+                      form.time === slot
                         ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-200'
                         : 'bg-white text-gray-600 border-gray-200 hover:border-rose-300'
                     }`}
                   >
-                    {t}
+                    {slot}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Hình thức đón */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Hình thức đón
+                {t('booking.pickupTypeLabel')}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -475,10 +483,10 @@ export default function Booking() {
                 >
                   <div className="text-2xl mb-1">🏠</div>
                   <p className="font-semibold text-sm text-gray-800">
-                    Đón tại nhà
+                    {t('booking.pickupHome')}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Y tá đến tận nhà đón bệnh nhân
+                    {t('booking.pickupHomeDesc')}
                   </p>
                 </button>
                 <button
@@ -491,28 +499,27 @@ export default function Booking() {
                 >
                   <div className="text-2xl mb-1">🏥</div>
                   <p className="font-semibold text-sm text-gray-800">
-                    Gặp tại cổng bệnh viện
+                    {t('booking.pickupHospital')}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Gia đình tự di chuyển, y tá đợi sẵn
+                    {t('booking.pickupHospitalDesc')}
                   </p>
                 </button>
               </div>
             </div>
 
-            {/* Địa chỉ */}
             {form.pickupType === 'home' && (
               <div className="space-y-3 animate-fadeIn">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Quận tại TP.HCM
+                    {t('booking.districtLabel')}
                   </label>
                   <select
                     value={form.district}
                     onChange={(e) => update('district', e.target.value)}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none"
                   >
-                    <option value="">— Chọn quận —</option>
+                    <option value="">{t('booking.districtPlaceholder')}</option>
                     {DISTRICTS.map((d) => (
                       <option key={d} value={d}>
                         {d}
@@ -522,17 +529,17 @@ export default function Booking() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Địa chỉ chi tiết
+                    {t('booking.addressLabel')}
                   </label>
                   <input
                     type="text"
                     value={form.address}
                     onChange={(e) => update('address', e.target.value)}
-                    placeholder="Số nhà, tên đường, phường..."
+                    placeholder={t('booking.addressPlaceholder')}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    ⚠️ Chỉ hỗ trợ địa chỉ trong TP.HCM
+                    ⚠️ {t('booking.addressHint')}
                   </p>
                 </div>
               </div>
@@ -545,63 +552,57 @@ export default function Booking() {
           <div className="space-y-5 animate-fadeIn">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">
-                Bước 3: Xác nhận gói dịch vụ
+                {t('booking.step3Title')}
               </h2>
               <p className="text-sm text-gray-500">
-                Gói đồng hành toàn diện (Care-Companion Package)
+                {t('booking.step3Subtitle')}
               </p>
             </div>
 
-            {/* Giá — nền teal đơn sắc */}
             <div className="bg-teal-50 rounded-xl p-5 border-2 border-teal-200">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-teal-700">
                   {BASE_PRICE.toLocaleString('vi-VN')}
                 </span>
                 <span className="text-sm text-gray-600">
-                  VNĐ / 4 giờ đầu tiên
+                  {t('booking.priceUnit')}
                 </span>
               </div>
               <p className="text-sm text-gray-600 mt-2">
-                Phụ phí phát sinh:{' '}
-                <b className="text-rose-600">+2.000 VNĐ / phút vượt</b>
+                <b className="text-rose-600 ml-1">
+                  {t('booking.priceOvertime')}
+                </b>
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                VD: Vượt 30 phút = +60.000đ • Vượt 1 giờ = +120.000đ
+                {t('booking.priceExample')}
               </p>
             </div>
 
-            {/* Quyền lợi */}
             <div className="bg-rose-50 rounded-xl p-5 border border-rose-100">
               <p className="font-bold text-rose-700 mb-3">
-                ✅ Gói đã bao gồm
+                ✅ {t('booking.includesTitle')}
               </p>
               <div className="space-y-2 text-sm text-gray-700">
                 {[
-                  'Xe taxi/công nghệ đưa đón 2 chiều nội thành TP.HCM',
-                  'Điều dưỡng 1:1 hỗ trợ làm thủ tục, bốc số, dìu đỡ, vào phòng khám cùng bác sĩ',
-                  'Báo cáo y tế số hóa & lưu bệnh án trọn đời',
-                  'Hệ thống nhắc lịch uống thuốc & nhắc lịch tái khám',
-                ].map((item, i) => (
+                  'booking.include1',
+                  'booking.include2',
+                  'booking.include3',
+                  'booking.include4',
+                ].map((key, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <span className="text-teal-600 shrink-0 font-bold">✓</span>
-                    <span>{item}</span>
+                    <span>{t(key)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Loại trừ */}
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
               <p className="text-sm font-bold text-red-700 mb-1">
-                ⚠️ Quy định loại trừ
+                ⚠️ {t('booking.excludeTitle')}
               </p>
               <p className="text-sm text-red-700">
-                <b>
-                  Gói KHÔNG bao gồm viện phí, phí xét nghiệm, chụp chiếu và
-                  tiền thuốc. Bệnh nhân/gia đình tự thanh toán trực tiếp tại
-                  bệnh viện.
-                </b>
+                <b>{t('booking.excludeDesc')}</b>
               </p>
             </div>
           </div>
@@ -612,10 +613,11 @@ export default function Booking() {
           <div className="space-y-5 animate-fadeIn">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">
-                Bước 4: Chọn y tá phụ trách
+                {t('booking.step4Title')}
               </h2>
               <p className="text-sm text-gray-500">
-                Danh sách y tá rảnh vào ngày {form.date} lúc {form.time}
+                {t('booking.step4Subtitle')} {form.date}{' '}
+                {t('booking.step4SubtitleConnector')} {form.time}
               </p>
             </div>
 
@@ -623,10 +625,10 @@ export default function Booking() {
               <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-8 text-center">
                 <div className="text-4xl mb-2">😔</div>
                 <p className="font-bold text-amber-800">
-                  Hiện không có y tá nào khả dụng
+                  {t('booking.noNurseTitle')}
                 </p>
                 <p className="text-sm text-amber-600 mt-1">
-                  Vui lòng chọn ngày khác hoặc quay lại sau
+                  {t('booking.noNurseDesc')}
                 </p>
               </div>
             ) : (
@@ -651,7 +653,7 @@ export default function Booking() {
                           {n.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {n.exp} năm kinh nghiệm
+                          {n.exp} {t('booking.yearsExp')}
                         </p>
                         <div className="flex items-center gap-1 mt-1">
                           <span className="text-yellow-500 text-xs">⭐</span>
@@ -681,7 +683,7 @@ export default function Booking() {
                         onClick={() => setNurseModal(n)}
                         className="flex-1 text-xs font-medium py-1.5 border border-teal-300 rounded-lg text-teal-700 hover:bg-teal-50 transition"
                       >
-                        👁 Xem bằng cấp
+                        👁 {t('booking.viewCerts')}
                       </button>
                       <button
                         onClick={() => update('nurseId', n.id)}
@@ -691,7 +693,9 @@ export default function Booking() {
                             : 'bg-rose-500 hover:bg-rose-600 text-white'
                         }`}
                       >
-                        {form.nurseId === n.id ? '✓ Đã chọn' : 'Chọn Y tá này'}
+                        {form.nurseId === n.id
+                          ? `✓ ${t('booking.nurseChosen')}`
+                          : t('booking.chooseNurse')}
                       </button>
                     </div>
                   </div>
@@ -706,43 +710,48 @@ export default function Booking() {
           <div className="space-y-5 animate-fadeIn">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">
-                Bước 5: Ủy quyền & thanh toán
+                {t('booking.step5Title')}
               </h2>
               <p className="text-sm text-gray-500">
-                Xem lại thông tin và thanh toán qua VNPay
+                {t('booking.step5Subtitle')}
               </p>
             </div>
 
-            {/* Tóm tắt */}
             <div className="bg-teal-50 rounded-xl p-5 space-y-3 text-sm border border-teal-100">
               <p className="font-bold text-gray-800 mb-3">
-                📋 Tóm tắt đặt lịch
+                📋 {t('booking.summaryTitle')}
               </p>
               {[
                 {
-                  label: 'Người bệnh',
+                  label: t('booking.summaryPatient'),
                   value: patients.find((p) => p.id === form.patientId)?.name,
                 },
                 {
-                  label: 'Bệnh viện',
+                  label: t('booking.summaryHospital'),
                   value:
                     form.hospitalId === 'other'
                       ? form.customHospitalName
                       : selectedHospital?.name,
                 },
-                { label: 'Chuyên khoa', value: form.specialty },
                 {
-                  label: 'Ngày & giờ đón',
+                  label: t('booking.summarySpecialty'),
+                  value: form.specialty,
+                },
+                {
+                  label: t('booking.summaryDateTime'),
                   value: `${form.date} • ${form.time}`,
                 },
                 {
-                  label: 'Điểm đón',
+                  label: t('booking.summaryPickup'),
                   value:
                     form.pickupType === 'home'
                       ? `${form.address}, ${form.district}`
-                      : 'Cổng bệnh viện',
+                      : t('booking.summaryHospitalGate'),
                 },
-                { label: 'Y tá phụ trách', value: selectedNurse?.name },
+                {
+                  label: t('booking.summaryNurse'),
+                  value: selectedNurse?.name,
+                },
               ].map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
                   <span className="text-gray-500">{row.label}</span>
@@ -753,7 +762,7 @@ export default function Booking() {
               ))}
               <div className="flex justify-between gap-4 pt-3 border-t border-teal-200">
                 <span className="font-semibold text-gray-700">
-                  Tổng thanh toán
+                  {t('booking.totalPayment')}
                 </span>
                 <span className="font-bold text-rose-600 text-lg">
                   {BASE_PRICE.toLocaleString('vi-VN')} VNĐ
@@ -761,7 +770,6 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Checkbox ủy quyền */}
             <label className="flex items-start gap-3 p-4 rounded-lg border-2 border-rose-200 bg-rose-50 cursor-pointer hover:bg-rose-100/60 transition">
               <input
                 type="checkbox"
@@ -770,13 +778,10 @@ export default function Booking() {
                 className="mt-0.5 w-4 h-4 accent-rose-500 shrink-0"
               />
               <span className="text-sm text-gray-700">
-                Tôi xác nhận <b>ủy quyền cho nhân viên CareMate</b> đại diện
-                gia đình đưa đón, hỗ trợ di chuyển và làm thủ tục hành chính y
-                tế cho bệnh nhân.
+                {t('booking.agreementText')}
               </span>
             </label>
 
-            {/* Nút thanh toán */}
             <button
               onClick={handlePay}
               disabled={!form.agreed}
@@ -785,11 +790,13 @@ export default function Booking() {
               <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm">
                 VN
               </div>
-              Thanh toán {BASE_PRICE.toLocaleString('vi-VN')} VNĐ qua VNPay
+              {t('booking.payViaVNPay', {
+                amount: BASE_PRICE.toLocaleString('vi-VN'),
+              })}
             </button>
 
             <p className="text-xs text-gray-400 text-center">
-              Hỗ trợ VNPAY-QR, thẻ ATM/Internet Banking, thẻ quốc tế
+              {t('booking.paymentMethods')}
             </p>
           </div>
         )}
@@ -802,7 +809,7 @@ export default function Booking() {
           disabled={step === 1}
           className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          ← Quay lại
+          ← {t('booking.backBtn')}
         </button>
 
         {step < 5 && (
@@ -811,19 +818,17 @@ export default function Booking() {
             disabled={!canNext()}
             className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-rose-200"
           >
-            Tiếp tục →
+            {t('booking.nextBtn')} →
           </button>
         )}
       </div>
 
-      {/* Nurse Modal */}
       <NurseProfileModal
         open={!!nurseModal}
         onClose={() => setNurseModal(null)}
         nurse={nurseModal}
       />
 
-      {/* VNPay Mock */}
       {paying && (
         <VNPayMock
           amount={BASE_PRICE}

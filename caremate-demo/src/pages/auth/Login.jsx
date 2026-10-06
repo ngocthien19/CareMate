@@ -1,6 +1,7 @@
 // src/pages/auth/Login.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 import heroImg from '../../assets/hero.jpg';
@@ -18,6 +19,7 @@ export function redirectByRole(role, navigate) {
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useStore();
+  const { t } = useTranslation();
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +30,11 @@ export default function Login() {
     e.preventDefault();
 
     if (!/^0\d{9}$/.test(phone)) {
-      toast.error('SĐT phải 10 chữ số, bắt đầu bằng 0');
+      toast.error(t('auth.phoneInvalid'));
       return;
     }
     if (!password) {
-      toast.error('Vui lòng nhập mật khẩu');
+      toast.error(t('auth.passwordRequired'));
       return;
     }
 
@@ -42,11 +44,11 @@ export default function Login() {
       setLoading(false);
 
       if (!result.ok) {
-        toast.error(result.message);
+        toast.error(t('auth.loginError'));
         return;
       }
 
-      toast.success(`Xin chào ${result.user.name}!`);
+      toast.success(t('auth.welcome', { name: result.user.name }));
       redirectByRole(result.user.role, navigate);
     }, 600);
   };
@@ -69,38 +71,39 @@ export default function Login() {
       <div className="hidden md:flex md:w-1/2 relative bg-gradient-to-br from-teal-600 to-teal-800 overflow-hidden">
         <img
           src={heroImg}
-          alt="Điều dưỡng dìu cụ già"
+          alt="Nurse helping elderly"
           className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
 
         <div className="relative flex flex-col justify-between p-10 text-white w-full">
-          <Logo variant="white" size="lg" />
+          <div className="flex items-center justify-between">
+            <Logo variant="white" size="lg" />
+          </div>
 
           <div className="max-w-md space-y-4">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5">
               <span className="w-2 h-2 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-xs font-semibold">
-                Dịch vụ độc quyền tại TP.HCM
+                {t('auth.heroBadge')}
               </span>
             </div>
             <h2 className="text-3xl font-bold leading-tight">
-              Chăm sóc cha mẹ tại bệnh viện{' '}
-              <span className="text-rose-300">như người thân</span>
+              {t('auth.heroTitle')}{' '}
+              <span className="text-rose-300">{t('auth.heroHighlight')}</span>
             </h2>
             <p className="text-sm text-white/80 leading-relaxed">
-              Điều dưỡng đồng hành 1:1, đưa đón 2 chiều, làm thủ tục và số hóa
-              bệnh án — để con an tâm dù bận rộn.
+              {t('auth.heroDesc')}
             </p>
           </div>
 
           <div className="flex gap-6 text-sm">
             <div>
               <p className="text-2xl font-bold">500+</p>
-              <p className="text-xs text-white/70">Ca thành công</p>
+              <p className="text-xs text-white/70">{t('auth.heroStatCases')}</p>
             </div>
             <div>
               <p className="text-2xl font-bold">4.9⭐</p>
-              <p className="text-xs text-white/70">Đánh giá</p>
+              <p className="text-xs text-white/70">{t('auth.heroStatRating')}</p>
             </div>
           </div>
         </div>
@@ -110,11 +113,12 @@ export default function Login() {
       <div className="flex-1 flex flex-col bg-gradient-to-br from-teal-50 to-rose-50 min-h-screen">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 animate-fadeIn">
+
             {/* Logo mobile */}
             <div className="md:hidden flex flex-col items-center mb-6">
               <Logo size="lg" />
               <p className="text-sm text-gray-500 mt-2 text-center">
-                Chăm sóc cha mẹ tại bệnh viện chu đáo như người thân
+                {t('auth.mobileTagline')}
               </p>
             </div>
 
@@ -122,16 +126,18 @@ export default function Login() {
             <div className="hidden md:flex flex-col items-center mb-6">
               <Logo size="lg" />
               <p className="text-sm text-gray-500 mt-2">
-                Đăng nhập để tiếp tục
+                {t('auth.loginSubtitle')}
               </p>
             </div>
 
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Đăng nhập</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">
+              {t('auth.login')}
+            </h2>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Số điện thoại
+                  {t('auth.phone')}
                 </label>
                 <input
                   type="tel"
@@ -139,14 +145,14 @@ export default function Login() {
                   onChange={(e) =>
                     setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))
                   }
-                  placeholder="0901234567"
+                  placeholder={t('auth.phonePlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mật khẩu
+                  {t('auth.password')}
                 </label>
                 <div className="relative">
                   <input
@@ -171,23 +177,23 @@ export default function Login() {
                 disabled={loading}
                 className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 shadow-lg shadow-rose-200"
               >
-                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {loading ? t('auth.loggingIn') : t('auth.loginBtn')}
               </button>
             </form>
 
             <p className="text-sm text-center text-gray-500 mt-6">
-              Chưa có tài khoản?{' '}
+              {t('auth.noAccount')}{' '}
               <Link
                 to="/register"
                 className="text-teal-600 font-semibold hover:underline"
               >
-                Đăng ký ngay
+                {t('auth.registerNow')}
               </Link>
             </p>
 
             <div className="mt-6 pt-6 border-t">
               <p className="text-xs text-gray-400 text-center mb-3">
-                Hoặc dùng tài khoản demo (mật khẩu: <b>123456</b>)
+                {t('auth.demoHint')} <b>123456</b>)
               </p>
 
               <div className="grid grid-cols-2 gap-2 mb-2">
@@ -196,14 +202,14 @@ export default function Login() {
                   onClick={() => fillDemo('customer')}
                   className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
                 >
-                  👤 Khách
+                  👤 {t('auth.demoCustomer')}
                 </button>
                 <button
                   type="button"
                   onClick={() => fillDemo('admin')}
                   className="text-xs py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
                 >
-                  🛡️ Admin
+                  🛡️ {t('auth.demoAdmin')}
                 </button>
               </div>
 
@@ -234,7 +240,7 @@ export default function Login() {
 
             <p className="text-xs text-gray-400 text-center mt-6">
               <Link to="/" className="hover:text-teal-600">
-                ← Về trang chủ
+                {t('auth.backHome')}
               </Link>
             </p>
           </div>

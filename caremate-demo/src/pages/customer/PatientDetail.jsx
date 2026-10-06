@@ -1,6 +1,7 @@
 // src/pages/customer/PatientDetail.jsx
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
@@ -10,6 +11,7 @@ import { exportPatientPDF } from '../../utils/exportPatientPDF';
 export default function PatientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { patients, ehrRecords } = useStore();
   const patient = patients.find((p) => String(p.id) === String(id));
 
@@ -19,12 +21,12 @@ export default function PatientDetail() {
   if (!patient) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Không tìm thấy hồ sơ</p>
+        <p className="text-gray-500">{t('patients.notFound')}</p>
         <button
           onClick={() => navigate('/customer/patients')}
           className="text-teal-600 font-semibold mt-3 hover:underline"
         >
-          ← Quay lại danh sách
+          ← {t('patients.backToList')}
         </button>
       </div>
     );
@@ -45,24 +47,34 @@ export default function PatientDetail() {
   const handleExportPDF = () => {
     try {
       exportPatientPDF(patient, ehrList);
-      toast.success('Đã tải file PDF');
+      toast.success(t('patients.exportPdfSuccess'));
     } catch (err) {
       console.error(err);
-      toast.error('Có lỗi khi xuất PDF');
+      toast.error(t('patients.exportPdfError'));
     }
   };
 
+  // Helper: dịch relation/gender/allergies/conditions
+  const relationLabel = t(`patients.relations.${patient.relation}`, {
+    defaultValue: patient.relation,
+  });
+  const genderLabel =
+    patient.gender === 'male'
+      ? t('patients.formGenderMale')
+      : patient.gender === 'female'
+      ? t('patients.formGenderFemale')
+      : patient.gender;
+
   return (
     <div className="max-w-4xl mx-auto space-y-5">
-      {/* Nút quay lại */}
       <button
         onClick={() => navigate('/customer/patients')}
         className="text-sm text-gray-500 hover:text-teal-600 transition flex items-center gap-1"
       >
-        ← Danh sách người thân
+        ← {t('patients.backToPatients')}
       </button>
 
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-400/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-2xl" />
@@ -80,11 +92,10 @@ export default function PatientDetail() {
             </div>
           )}
           <div className="flex-1 min-w-[200px]">
-            <h1 className="text-2xl font-bold text-white">
-              {patient.name}
-            </h1>
+            <h1 className="text-2xl font-bold text-white">{patient.name}</h1>
             <p className="text-sm text-teal-50 mt-1">
-              {patient.relation} • {patient.gender} • Sinh năm {patient.dob}
+              {relationLabel} • {genderLabel} • {t('patients.bornYear')}{' '}
+              {patient.dob}
             </p>
             <div className="flex gap-2 mt-3 flex-wrap">
               {patient.bhyt && (
@@ -94,12 +105,12 @@ export default function PatientDetail() {
               )}
               {patient.allergies?.length > 0 && (
                 <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                  🚨 {patient.allergies.length} dị ứng
+                  🚨 {t('patients.allergyCount', { count: patient.allergies.length })}
                 </span>
               )}
               {patient.conditions?.length > 0 && (
                 <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                  ⚠️ {patient.conditions.length} bệnh nền
+                  ⚠️ {t('patients.conditionCount', { count: patient.conditions.length })}
                 </span>
               )}
             </div>
@@ -109,13 +120,13 @@ export default function PatientDetail() {
               onClick={handleExportPDF}
               className="bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 rounded-lg transition shadow-md flex items-center gap-2 text-sm"
             >
-              📄 Xuất PDF
+              📄 {t('patients.exportPdf')}
             </button>
             <button
               onClick={() => setQrOpen(true)}
               className="bg-rose-500 hover:bg-rose-600 text-white font-semibold px-4 py-2 rounded-lg transition shadow-md flex items-center gap-2 text-sm"
             >
-              📱 Mã QR
+              📱 {t('patients.qrCode')}
             </button>
           </div>
         </div>
@@ -124,13 +135,13 @@ export default function PatientDetail() {
       {/* ===== INFO CARD ===== */}
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
         <p className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-          ℹ️ Thông tin chi tiết
+          ℹ️ {t('patients.infoTitle')}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="p-3 rounded-lg bg-teal-50 border border-teal-200">
             <p className="text-xs text-teal-700 font-semibold mb-1">
-              🆔 Mã BHYT
+              🆔 {t('patients.bhytLabel')}
             </p>
             <p className="text-sm font-bold text-gray-800">
               {patient.bhyt || '—'}
@@ -138,7 +149,7 @@ export default function PatientDetail() {
           </div>
           <div className="p-3 rounded-lg bg-rose-50 border border-rose-200">
             <p className="text-xs text-rose-700 font-semibold mb-1">
-              📞 SĐT khẩn cấp
+              📞 {t('patients.emergencyPhoneLabel')}
             </p>
             <p className="text-sm font-bold text-gray-800">
               {patient.emergencyPhone || '—'}
@@ -146,7 +157,7 @@ export default function PatientDetail() {
           </div>
           <div className="md:col-span-2 p-3 rounded-lg bg-gray-50 border border-gray-200">
             <p className="text-xs text-gray-600 font-semibold mb-1">
-              📍 Địa chỉ
+              📍 {t('patients.addressLabel')}
             </p>
             <p className="text-sm font-bold text-gray-800">
               {patient.address || '—'}
@@ -154,13 +165,12 @@ export default function PatientDetail() {
           </div>
         </div>
 
-        {/* Cảnh báo y tế */}
         {(patient.allergies?.length > 0 || patient.conditions?.length > 0) && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
             {patient.allergies?.length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <p className="text-sm font-bold text-red-700 mb-2 flex items-center gap-2">
-                  🚨 Dị ứng thuốc
+                  🚨 {t('patients.allergySection')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {patient.allergies.map((a) => (
@@ -168,7 +178,7 @@ export default function PatientDetail() {
                       key={a}
                       className="text-xs bg-white text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-semibold"
                     >
-                      {a}
+                      {t(`patients.allergies.${a}`, { defaultValue: a })}
                     </span>
                   ))}
                 </div>
@@ -177,7 +187,7 @@ export default function PatientDetail() {
             {patient.conditions?.length > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm font-bold text-amber-700 mb-2 flex items-center gap-2">
-                  ⚠️ Bệnh lý nền
+                  ⚠️ {t('patients.conditionSection')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {patient.conditions.map((c) => (
@@ -185,7 +195,7 @@ export default function PatientDetail() {
                       key={c}
                       className="text-xs bg-white text-amber-700 border border-amber-300 px-2.5 py-1 rounded-full font-semibold"
                     >
-                      {c}
+                      {t(`patients.conditions.${c}`, { defaultValue: c })}
                     </span>
                   ))}
                 </div>
@@ -199,19 +209,17 @@ export default function PatientDetail() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            📋 Bệnh án điện tử
+            📋 {t('patients.ehrTitle')}
           </h2>
           <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-3 py-1 rounded-full font-semibold">
-            {ehrList.length} lần khám
+            {t('patients.ehrVisitCount', { count: ehrList.length })}
           </span>
         </div>
 
         {ehrList.length === 0 ? (
           <div className="bg-teal-50 rounded-2xl p-8 text-center border-2 border-dashed border-teal-200">
             <div className="text-4xl mb-2">📋</div>
-            <p className="text-gray-600 text-sm">
-              Chưa có lần khám nào. Bệnh án sẽ tự động cập nhật sau mỗi ca khám.
-            </p>
+            <p className="text-gray-600 text-sm">{t('patients.ehrEmpty')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -226,7 +234,6 @@ export default function PatientDetail() {
                       : 'border-gray-200 hover:border-teal-200'
                   }`}
                 >
-                  {/* Header dòng */}
                   <button
                     onClick={() => setExpandedEhr(isExpanded ? null : ehr.id)}
                     className="w-full text-left p-4 hover:bg-teal-50/40 transition flex items-center gap-3"
@@ -257,42 +264,36 @@ export default function PatientDetail() {
                     </span>
                   </button>
 
-                  {/* Chi tiết mở rộng */}
                   {isExpanded && (
                     <div className="px-4 pb-4 pt-3 border-t-2 border-teal-100 bg-teal-50/30 space-y-3 animate-fadeIn">
-                      {/* Chẩn đoán */}
                       <div className="bg-white rounded-lg p-3 border border-teal-200">
                         <p className="text-xs text-teal-700 font-bold mb-1">
-                          🩺 Chẩn đoán
+                          🩺 {t('patients.ehrDiagnosis')}
                         </p>
                         <p className="text-sm text-gray-800 font-medium">
                           {ehr.diagnosis}
                         </p>
                       </div>
 
-                      {/* Dặn dò */}
                       {ehr.advice && (
                         <div className="bg-white rounded-lg p-3 border border-rose-200">
                           <p className="text-xs text-rose-700 font-bold mb-1">
-                            💬 Dặn dò của bác sĩ
+                            💬 {t('patients.ehrAdvice')}
                           </p>
                           <p className="text-sm text-gray-800">{ehr.advice}</p>
                         </div>
                       )}
 
-                      {/* Sinh hiệu */}
                       {ehr.vitals &&
-                        (ehr.vitals.bp ||
-                          ehr.vitals.pulse ||
-                          ehr.vitals.weight) && (
+                        (ehr.vitals.bp || ehr.vitals.pulse || ehr.vitals.weight) && (
                           <div>
                             <p className="text-xs text-gray-600 font-bold mb-2">
-                              💓 Chỉ số sinh hiệu
+                              💓 {t('patients.ehrVitals')}
                             </p>
                             <div className="grid grid-cols-3 gap-2">
                               <div className="bg-white rounded-xl p-3 text-center border-2 border-teal-200">
                                 <p className="text-[10px] text-teal-700 font-semibold mb-1">
-                                  Huyết áp
+                                  {t('patients.ehrBp')}
                                 </p>
                                 <p className="text-lg font-bold text-teal-700">
                                   {ehr.vitals.bp || '—'}
@@ -300,35 +301,30 @@ export default function PatientDetail() {
                               </div>
                               <div className="bg-white rounded-xl p-3 text-center border-2 border-rose-200">
                                 <p className="text-[10px] text-rose-700 font-semibold mb-1">
-                                  Mạch
+                                  {t('patients.ehrPulse')}
                                 </p>
                                 <p className="text-lg font-bold text-rose-600">
                                   {ehr.vitals.pulse || '—'}
                                 </p>
-                                <p className="text-[10px] text-gray-500">
-                                  bpm
-                                </p>
+                                <p className="text-[10px] text-gray-500">bpm</p>
                               </div>
                               <div className="bg-white rounded-xl p-3 text-center border-2 border-amber-200">
                                 <p className="text-[10px] text-amber-700 font-semibold mb-1">
-                                  Cân nặng
+                                  {t('patients.ehrWeight')}
                                 </p>
                                 <p className="text-lg font-bold text-amber-600">
                                   {ehr.vitals.weight || '—'}
                                 </p>
-                                <p className="text-[10px] text-gray-500">
-                                  kg
-                                </p>
+                                <p className="text-[10px] text-gray-500">kg</p>
                               </div>
                             </div>
                           </div>
                         )}
 
-                      {/* Đơn thuốc */}
                       {ehr.prescription && (
                         <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                           <p className="text-xs text-blue-700 font-bold mb-1">
-                            💊 Đơn thuốc
+                            💊 {t('patients.ehrPrescription')}
                           </p>
                           <p className="text-sm text-gray-800 font-medium">
                             {ehr.prescription}
@@ -336,20 +332,18 @@ export default function PatientDetail() {
                         </div>
                       )}
 
-                      {/* Ngày tái khám */}
                       {ehr.followupDate && (
                         <div className="bg-rose-50 rounded-lg p-3 border border-rose-200">
                           <p className="text-sm text-rose-700 font-bold">
-                            📅 Ngày hẹn tái khám: {ehr.followupDate}
+                            📅 {t('patients.ehrFollowup')} {ehr.followupDate}
                           </p>
                         </div>
                       )}
 
-                      {/* Ảnh */}
                       {ehr.images?.length > 0 && (
                         <div>
                           <p className="text-xs text-gray-600 font-bold mb-2">
-                            📸 Hình ảnh cận lâm sàng
+                            📸 {t('patients.ehrImages')}
                           </p>
                           <div className="grid grid-cols-2 gap-2">
                             {ehr.images.map((img, i) => (
@@ -371,13 +365,12 @@ export default function PatientDetail() {
                         </div>
                       )}
 
-                      {/* Y tá phụ trách */}
                       {ehr.nurse && (
                         <div className="pt-2 border-t border-teal-200">
                           <p className="text-xs text-gray-700">
                             👩‍⚕️{' '}
                             <b className="text-teal-700">
-                              Y tá CareMate: {ehr.nurse}
+                              {t('patients.ehrNurse')} {ehr.nurse}
                             </b>
                           </p>
                         </div>
@@ -395,12 +388,12 @@ export default function PatientDetail() {
       <Modal
         open={qrOpen}
         onClose={() => setQrOpen(false)}
-        title="Chia sẻ bệnh án"
+        title={t('patients.qrModalTitle')}
         maxWidth="max-w-md"
       >
         <div className="text-center space-y-4">
           <p className="text-sm text-gray-600">
-            Đưa mã này cho bác sĩ để xem nhanh thông tin y tế
+            {t('patients.qrModalHint')}
           </p>
 
           <div className="inline-block bg-teal-50 p-4 rounded-2xl border-2 border-teal-200 shadow-md">
@@ -408,13 +401,14 @@ export default function PatientDetail() {
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-            ⏱️ Mã QR có hiệu lực trong <b>24 giờ</b> kể từ khi mở
+            ⏱️ {t('patients.qrValidHint')}{' '}
+            <b>{t('patients.qrValidHours')}</b> {t('patients.qrValidSuffix')}
           </div>
 
           <div className="space-y-2 text-sm bg-teal-50 rounded-lg p-3 border border-teal-100">
             <p className="font-bold text-teal-700">{patient.name}</p>
             <p className="text-gray-600">
-              {patient.gender} • {patient.dob}
+              {genderLabel} • {patient.dob}
             </p>
           </div>
 
@@ -422,17 +416,17 @@ export default function PatientDetail() {
             <button
               onClick={() => {
                 navigator.clipboard?.writeText(qrData);
-                toast.success('Đã copy dữ liệu QR');
+                toast.success(t('patients.qrCopySuccess'));
               }}
               className="flex-1 py-2.5 border-2 border-teal-500 text-teal-700 font-semibold rounded-lg hover:bg-teal-50 transition text-sm"
             >
-              📋 Copy dữ liệu
+              📋 {t('patients.qrCopyBtn')}
             </button>
             <button
               onClick={handleExportPDF}
               className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-lg transition shadow-md shadow-rose-200 text-sm"
             >
-              📄 Xuất PDF
+              📄 {t('patients.exportPdf')}
             </button>
           </div>
         </div>

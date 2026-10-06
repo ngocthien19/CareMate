@@ -1,27 +1,33 @@
 // src/components/NurseProfileModal.jsx
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 import { useStore } from '../store/useStore';
 import { calcNurseRating, getNurseReviews } from '../utils/calcNurseRating';
 
 export default function NurseProfileModal({ open, onClose, nurse }) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState('info');
   const { reviews } = useStore();
 
   if (!nurse) return null;
 
-  // 👇 Tính rating động từ store reviews
   const { rating, count } = calcNurseRating(nurse.id, reviews, nurse.rating);
   const nurseReviews = getNurseReviews(nurse.id, reviews);
 
   const tabs = [
-    { key: 'info', label: 'Lý lịch nghề nghiệp' },
-    { key: 'certs', label: 'Bằng cấp & Chứng chỉ' },
-    { key: 'reviews', label: `Đánh giá (${count})` },
+    { key: 'info', label: t('nurseProfileModal.tabInfo') },
+    { key: 'certs', label: t('nurseProfileModal.tabCerts') },
+    { key: 'reviews', label: t('nurseProfileModal.tabReviews', { count }) },
   ];
 
   return (
-    <Modal open={open} onClose={onClose} title="Hồ sơ Y tá" maxWidth="max-w-xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t('nurseProfileModal.title')}
+      maxWidth="max-w-xl"
+    >
       {/* Header y tá */}
       <div className="flex items-center gap-4 pb-5 border-b">
         <img
@@ -32,7 +38,8 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
         <div className="flex-1">
           <h3 className="text-lg font-bold text-gray-800">{nurse.name}</h3>
           <p className="text-sm text-gray-500">
-            {nurse.age} tuổi • {nurse.exp} năm kinh nghiệm
+            {nurse.age} {t('nurseProfileModal.yearsOld')} • {nurse.exp}{' '}
+            {t('nurseProfileModal.yearsExp')}
           </p>
           <div className="flex items-center gap-1 mt-1">
             <span className="text-yellow-500">⭐</span>
@@ -40,7 +47,7 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
               {rating.toFixed(1)}
             </span>
             <span className="text-xs text-gray-400">
-              ({count} đánh giá)
+              ({count} {t('nurseProfileModal.reviews')})
             </span>
           </div>
         </div>
@@ -48,17 +55,17 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
 
       {/* Tabs */}
       <div className="flex gap-1 mt-4 border-b">
-        {tabs.map((t) => (
+        {tabs.map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tabItem.key}
+            onClick={() => setTab(tabItem.key)}
             className={`px-3 py-2 text-sm font-medium transition border-b-2 -mb-px ${
-              tab === t.key
+              tab === tabItem.key
                 ? 'border-teal-500 text-teal-700'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t.label}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -69,23 +76,23 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
           <div className="space-y-4 text-sm">
             <div>
               <p className="font-semibold text-gray-700 mb-2">
-                Chuyên môn chính
+                {t('nurseProfileModal.specialty')}
               </p>
               <div className="flex flex-wrap gap-2">
                 <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-1 rounded-full">
-                  Chăm sóc người cao tuổi
+                  {t('nurseProfileModal.spec1')}
                 </span>
                 <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-1 rounded-full">
-                  Hỗ trợ thủ tục y tế
+                  {t('nurseProfileModal.spec2')}
                 </span>
                 <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-1 rounded-full">
-                  Theo dõi sinh hiệu
+                  {t('nurseProfileModal.spec3')}
                 </span>
               </div>
             </div>
             <div>
               <p className="font-semibold text-gray-700 mb-2">
-                Bệnh viện từng công tác
+                {t('nurseProfileModal.workHistory')}
               </p>
               <ul className="space-y-1 text-gray-600 text-xs">
                 <li>• BV Chợ Rẫy — Khoa Nội tổng quát (2 năm)</li>
@@ -93,7 +100,9 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-700 mb-2">Kỹ năng</p>
+              <p className="font-semibold text-gray-700 mb-2">
+                {t('nurseProfileModal.skills')}
+              </p>
               <ul className="space-y-1 text-gray-600 text-xs">
                 <li>• Sơ cấp cứu cơ bản (BLS)</li>
                 <li>• Đo sinh hiệu, hỗ trợ di chuyển</li>
@@ -126,7 +135,7 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
               </div>
             ))}
             <p className="text-[10px] text-gray-400 text-center italic">
-              Chỉ sử dụng xác thực trên nền tảng CareMate
+              {t('nurseProfileModal.certNote')}
             </p>
           </div>
         )}
@@ -135,7 +144,7 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
           <div className="space-y-3">
             {nurseReviews.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">
-                Chưa có đánh giá nào
+                {t('nurseProfileModal.noReviews')}
               </p>
             ) : (
               nurseReviews.map((r) => (
@@ -148,11 +157,11 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
                       {'⭐'.repeat(r.stars)}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {r.stars}/5 sao
+                      {t('nurseProfileModal.stars', { count: r.stars })}
                     </span>
                     {r.anonymous && (
                       <span className="text-[10px] text-gray-400 italic">
-                        (Ẩn danh)
+                        {t('nurseProfileModal.anonymous')}
                       </span>
                     )}
                   </div>
@@ -161,12 +170,12 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
                   )}
                   {r.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {r.tags.map((t) => (
+                      {r.tags.map((tag) => (
                         <span
-                          key={t}
+                          key={tag}
                           className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full"
                         >
-                          {t}
+                          {tag}
                         </span>
                       ))}
                     </div>

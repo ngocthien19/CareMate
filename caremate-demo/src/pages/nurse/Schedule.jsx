@@ -1,27 +1,27 @@
 // src/pages/nurse/Schedule.jsx
-import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useStore } from '../../store/useStore';
 
 const DAYS = [
-  { key: 1, label: 'Thứ 2' },
-  { key: 2, label: 'Thứ 3' },
-  { key: 3, label: 'Thứ 4' },
-  { key: 4, label: 'Thứ 5' },
-  { key: 5, label: 'Thứ 6' },
-  { key: 6, label: 'Thứ 7' },
-  { key: 0, label: 'Chủ nhật' },
+  { key: 1, labelKey: 'nurseSchedule.days.mon' },
+  { key: 2, labelKey: 'nurseSchedule.days.tue' },
+  { key: 3, labelKey: 'nurseSchedule.days.wed' },
+  { key: 4, labelKey: 'nurseSchedule.days.thu' },
+  { key: 5, labelKey: 'nurseSchedule.days.fri' },
+  { key: 6, labelKey: 'nurseSchedule.days.sat' },
+  { key: 0, labelKey: 'nurseSchedule.days.sun' },
 ];
 
 const SHIFTS = [
-  { key: 'morning', label: 'Sáng', time: '06:00 - 12:00' },
-  { key: 'afternoon', label: 'Chiều', time: '12:00 - 18:00' },
+  { key: 'morning', labelKey: 'nurseSchedule.shifts.morning', time: '06:00 - 12:00' },
+  { key: 'afternoon', labelKey: 'nurseSchedule.shifts.afternoon', time: '12:00 - 18:00' },
 ];
 
 export default function NurseSchedule() {
+  const { t } = useTranslation();
   const { user, nurseSchedules, updateNurseSchedule } = useStore();
 
-  // Lấy lịch của nurse hiện tại (nếu có)
   const mySchedule = nurseSchedules[user?.nurseId] || {};
 
   const toggle = (dayKey, shiftKey) => {
@@ -35,10 +35,17 @@ export default function NurseSchedule() {
       },
     };
     updateNurseSchedule(user.nurseId, updated);
+
+    const shiftLabel = t(
+      SHIFTS.find((s) => s.key === shiftKey)?.labelKey
+    );
+    const dayLabel = t(DAYS.find((d) => d.key === dayKey)?.labelKey);
+    const isOn = updated[dayKeyStr][shiftKey];
+
     toast.success(
-      `${updated[dayKeyStr][shiftKey] ? 'Đã bật' : 'Đã tắt'} ca ${
-        SHIFTS.find((s) => s.key === shiftKey)?.label
-      } ${DAYS.find((d) => d.key === dayKey)?.label}`
+      isOn
+        ? t('nurseSchedule.toggleOn', { shift: shiftLabel, day: dayLabel })
+        : t('nurseSchedule.toggleOff', { shift: shiftLabel, day: dayLabel })
     );
   };
 
@@ -55,7 +62,7 @@ export default function NurseSchedule() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
-      {/* ===== HEADER — nền TEAL đơn sắc ===== */}
+      {/* ===== HEADER ===== */}
       <div className="relative rounded-2xl overflow-hidden bg-teal-600 p-6 shadow-lg">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-400/20 rounded-full blur-2xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-400/10 rounded-full blur-3xl" />
@@ -65,28 +72,26 @@ export default function NurseSchedule() {
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />
               <span className="text-[10px] font-semibold text-white">
-                Quản lý lịch làm việc
+                {t('nurseSchedule.headerBadge')}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">
-              🗓️ Lịch rảnh của tôi
+              🗓️ {t('nurseSchedule.headerTitle')}
             </h1>
             <p className="text-sm text-teal-50 mt-1">
-              Bật các ca bạn rảnh để hệ thống mở cho khách đặt
+              {t('nurseSchedule.headerSubtitle')}
             </p>
           </div>
         </div>
       </div>
 
-      {/* ===== INFO — tổng ca đang mở (màu HỒNG) ===== */}
+      {/* ===== INFO ===== */}
       <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3 shadow-md shadow-rose-100">
         <p className="text-sm text-rose-700 font-semibold">
-          ✅ Bạn đang mở{' '}
-          <b className="text-rose-600 text-lg">{totalSlots}</b>{' '}
-          ca trong tuần
+          ✅ {t('nurseSchedule.openingCount', { count: totalSlots })}
         </p>
         <span className="text-xs text-rose-600 bg-white border-2 border-rose-200 px-3 py-1 rounded-full font-bold">
-          Lịch được cập nhật tự động vào hệ thống
+          {t('nurseSchedule.autoUpdate')}
         </span>
       </div>
 
@@ -94,14 +99,14 @@ export default function NurseSchedule() {
       <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm">
         <div className="grid grid-cols-3 bg-teal-50 border-b-2 border-teal-100">
           <div className="px-4 py-3 font-bold text-sm text-teal-700">
-            Ngày
+            {t('nurseSchedule.dayLabel')}
           </div>
           {SHIFTS.map((s) => (
             <div
               key={s.key}
               className="px-4 py-3 font-bold text-sm text-teal-700 text-center"
             >
-              <p>{s.label}</p>
+              <p>{t(s.labelKey)}</p>
               <p className="text-[10px] text-teal-600 font-normal mt-0.5">
                 {s.time}
               </p>
@@ -117,7 +122,7 @@ export default function NurseSchedule() {
             }`}
           >
             <div className="px-4 py-4 font-bold text-sm text-gray-700 flex items-center">
-              {d.label}
+              {t(d.labelKey)}
             </div>
             {SHIFTS.map((s) => {
               const active = isOn(d.key, s.key);
@@ -131,7 +136,9 @@ export default function NurseSchedule() {
                       : 'bg-white text-gray-400 border-gray-200 hover:bg-rose-500 hover:text-white hover:border-rose-500'
                   }`}
                 >
-                  {active ? '✓ Rảnh' : '— Trống'}
+                  {active
+                    ? `✓ ${t('nurseSchedule.freeLabel')}`
+                    : `— ${t('nurseSchedule.emptyLabel')}`}
                 </button>
               );
             })}
@@ -144,8 +151,7 @@ export default function NurseSchedule() {
         <p className="text-xs text-blue-700 flex items-start gap-2">
           <span className="text-base shrink-0">💡</span>
           <span>
-            <b>Lưu ý:</b> Khách hàng chỉ có thể đặt lịch vào các ca bạn đã bật.
-            Hãy cập nhật lịch rảnh trước ít nhất 1 ngày.
+            <b>{t('common.note') || 'Lưu ý:'}</b> {t('nurseSchedule.tip')}
           </span>
         </p>
       </div>
