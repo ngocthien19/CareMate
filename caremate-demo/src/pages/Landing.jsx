@@ -194,7 +194,7 @@ export default function Landing() {
               <p className="text-xs text-gray-500 mb-2">Trọn gói 4 giờ đầu</p>
               <div className="flex items-baseline justify-center gap-2">
                 <span className="text-5xl font-bold text-teal-700">
-                  499.000
+                  899.000
                 </span>
                 <span className="text-lg text-gray-600 font-semibold">VNĐ</span>
               </div>

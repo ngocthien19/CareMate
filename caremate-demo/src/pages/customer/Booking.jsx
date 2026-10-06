@@ -13,7 +13,7 @@ import VNPayMock from '../../components/VNPayMock';
 import { calcNurseRating } from '../../utils/calcNurseRating';
 
 // ===== HẰNG SỐ =====
-const BASE_PRICE = 499000;
+const BASE_PRICE = 899000;
 
 // ===== STEPPER =====
 const STEPS = [

@@ -191,7 +191,7 @@ export const BOOKINGS = [
     startTime: Date.now() - 2 * 3600 * 1000,
     endTime: null,
     paymentStatus: 'paid',
-    amount: 499000,
+    amount: 899000,
     createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
   },
   // Ca đã hoàn tất — vượt 4h → có phụ phí chưa trả
@@ -204,7 +204,7 @@ export const BOOKINGS = [
     startTime: Date.now() - 26 * 3600 * 1000,
     endTime: Date.now() - 26 * 3600 * 1000 + 5 * 3600 * 1000, // 5 giờ
     paymentStatus: 'paid',
-    amount: 499000,
+    amount: 899000,
     // 👇 ĐÃ thanh toán phụ phí (120k cho 1h vượt)
     overtimePaymentStatus: 'paid',
     overtimeAmount: 120000,
@@ -224,7 +224,7 @@ export const BOOKINGS = [
     startTime: Date.now() - 5 * 24 * 3600 * 1000,
     endTime: Date.now() - 5 * 24 * 3600 * 1000 + 4.5 * 3600 * 1000, // 4h30p
     paymentStatus: 'paid',
-    amount: 499000,
+    amount: 899000,
     overtimePaymentStatus: 'paid',
     overtimeAmount: 60000,        // 👈 SỬA: 30p × 2k = 60k
     overtimeTransaction: {
@@ -318,7 +318,7 @@ export const TRANSACTIONS = [
     id: 'T1',
     bookingId: 'BK001',
     type: 'base',
-    amount: 499000,
+    amount: 899000,
     status: 'success',
     date: '2026-10-05',
   },
@@ -327,7 +327,7 @@ export const TRANSACTIONS = [
     id: 'T2',
     bookingId: 'BK002',
     type: 'base',
-    amount: 499000,
+    amount: 899000,
     status: 'success',
     date: '2026-09-28',
   },
@@ -344,7 +344,7 @@ export const TRANSACTIONS = [
     id: 'T4',
     bookingId: 'BK003',
     type: 'base',
-    amount: 499000,
+    amount: 899000,
     status: 'success',
     date: '2026-10-02',
   },
