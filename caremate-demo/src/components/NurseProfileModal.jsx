@@ -95,8 +95,8 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
                 {t('nurseProfileModal.workHistory')}
               </p>
               <ul className="space-y-1 text-gray-600 text-xs">
-                <li>• BV Chợ Rẫy — Khoa Nội tổng quát (2 năm)</li>
-                <li>• BV ĐHYD TP.HCM — Khoa Lão (3 năm)</li>
+                <li>• Cho Ray Hospital — General Internal Medicine (2 years)</li>
+                <li>• University Medical Center HCMC — Geriatrics (3 years)</li>
               </ul>
             </div>
             <div>
@@ -104,9 +104,9 @@ export default function NurseProfileModal({ open, onClose, nurse }) {
                 {t('nurseProfileModal.skills')}
               </p>
               <ul className="space-y-1 text-gray-600 text-xs">
-                <li>• Sơ cấp cứu cơ bản (BLS)</li>
-                <li>• Đo sinh hiệu, hỗ trợ di chuyển</li>
-                <li>• Giao tiếp thân thiện với người cao tuổi</li>
+                <li>• Basic Life Support (BLS)</li>
+                <li>• Vital signs measurement, mobility assistance</li>
+                <li>• Friendly communication with the elderly</li>
               </ul>
             </div>
           </div>
