@@ -394,7 +394,7 @@ export const EHR_RECORDS = {
       vitals: { bp: '135/85', pulse: 78, weight: 65 },
       prescription:
         'Amlodipine 5mg (1 tab/morning), Metformin 500mg (1 tab/morning), Metformin 500mg (1 tab/evening), Vitamin B12 (1 tab/noon)',
-      followupDate: '2026-10-10',
+      followupDate: '2026-10-24',
       images: [
         {
           name: 'Prescription',
